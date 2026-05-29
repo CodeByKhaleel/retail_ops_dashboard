@@ -186,7 +186,6 @@ Included:
 Recommended configuration:
 
 ```text
-Build Command: npm run build
 Install Command: npm install
 Output Directory: leave empty
 ```
