@@ -301,25 +301,3 @@ This repository intentionally excludes:
 * internal branding
 * secrets
 * infrastructure references
-
-Before publishing, verify:
-
-```bash
-rg "company-name|internal|secret|firebase|mongo|redis|oauth|client_secret|private_key|password|token" .
-```
-
-Never commit:
-
-* `.env`
-* production secrets
-* API credentials
-* workplace configuration
-* internal assets
-
----
-
-# Suggested GitHub Repository Description
-
-```text
-Enterprise-grade retail operations dashboard showcasing analytics APIs, filtering systems, chart aggregation, fulfillment workflows, Docker packaging, and Vercel deployment using deterministic generated data.
-```
