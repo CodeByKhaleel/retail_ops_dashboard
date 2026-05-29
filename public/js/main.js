@@ -51,22 +51,11 @@ async function init() {
     console.log('[MAIN] Token exists:', !!token);
     console.log('[MAIN] User email:', user.email);
 
-    // Check if we're in production mode (not localhost)
-    const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-
-    // In production, require valid demo auth token (not mock token)
-    if (isProduction && token === 'mock_token_for_dev') {
-        console.log('[MAIN] Mock token not allowed in production, redirecting to login');
-        localStorage.clear();
-        window.location.href = '/login.html';
-        return;
-    }
-
-    // Allow dev mode (mock_token_for_dev) to proceed without redirect only in development
-    if (!token || (!user.email && token !== 'mock_token_for_dev')) {
-        console.log('[MAIN] Not authenticated, redirecting to login');
-        window.location.href = '/login.html';
-        return;
+    if (!token || !user.email) {
+        console.log('[MAIN] Demo session missing, restoring local demo operator');
+        localStorage.setItem('authToken', 'mock_token_for_dev');
+        localStorage.setItem('userEmail', 'demo@retailops.local');
+        localStorage.setItem('userName', 'Demo Operator');
     }
 
     // If using mock token, ensure user data is set
@@ -100,8 +89,7 @@ async function init() {
         console.log('[MAIN] Dashboard loaded successfully');
     } catch (error) {
         console.error('[MAIN] Error initializing dashboard:', error);
-        localStorage.clear();
-        window.location.href = '/login.html';
+        ui.showError('Dashboard data could not be loaded. Please refresh the page.');
     }
 }
 
