@@ -1,14 +1,14 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "public",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "public/**"
+    }
+  },
   "rewrites": [
     {
-      "source": "/api/(.*)",
+      "source": "/(.*)",
       "destination": "/api"
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
     }
   ]
 }

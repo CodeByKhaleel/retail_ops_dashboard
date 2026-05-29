@@ -188,7 +188,7 @@ Recommended configuration:
 ```text
 Build Command: npm run build
 Install Command: npm install
-Output Directory: public
+Output Directory: leave empty
 ```
 
 No environment variables are required for the public demo deployment.

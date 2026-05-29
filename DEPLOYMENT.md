@@ -9,14 +9,14 @@ This project is intended to deploy as a sanitized demo.
 
 ```text
 Build Command: npm run build
-Output Directory: public
 Install Command: npm install
+Output Directory: leave empty
 ```
 
 3. Do not configure environment variables unless you are changing the demo defaults.
 4. Deploy.
 
-The included `vercel.json` routes static dashboard pages to `public/index.html` and sends `/api/*` requests to the Express app exported from `api/index.ts`.
+The included `vercel.json` routes requests to the Express app exported from `api/index.ts`. The serverless function includes `public/**`, so Express serves the static dashboard assets and API routes from the same sanitized demo app.
 
 ## Docker
 
