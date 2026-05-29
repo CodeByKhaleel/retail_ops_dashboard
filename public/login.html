@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retail Operations Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    main {
+      width: min(420px, calc(100vw - 32px));
+      border: 1px solid #e2e8f0;
+      background: white;
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    p { margin: 0 0 24px; color: #64748b; line-height: 1.5; }
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      background: #7c3aed;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Retail Operations Dashboard</h1>
+    <p>This GitHub demo uses a local demo operator session. No external auth provider is required.</p>
+    <button id="continue">Continue to dashboard</button>
+  </main>
+  <script>
+    document.getElementById('continue').addEventListener('click', () => {
+      localStorage.setItem('authToken', 'mock_token_for_dev');
+      localStorage.setItem('userEmail', 'demo@retailops.local');
+      localStorage.setItem('userName', 'Demo Operator');
+      window.location.href = '/';
+    });
+  </script>
+</body>
+</html>

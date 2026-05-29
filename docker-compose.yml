@@ -1,0 +1,12 @@
+services:
+  retail-ops-dashboard:
+    build:
+      context: .
+    image: retail-ops-dashboard:demo
+    ports:
+      - "7778:7778"
+    environment:
+      NODE_ENV: production
+      AUTH_MODE: disabled
+      PORT: 7778
+    restart: unless-stopped

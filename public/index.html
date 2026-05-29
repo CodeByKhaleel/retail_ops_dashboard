@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Operations Dashboard</title>
+
+    <!-- Localized Assets for Offline/DNS Reliability -->
+    <script src="/vendor/tailwind.min.js"></script>
+    <script src="/vendor/chart.js"></script>
+    <script>
+        // Immediate Theme Application (Avoids Flash)
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    </script>
+    <script>
+        tailwind.config = {
+            darkMode: ['selector', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: 'var(--brand-50)',
+                            100: '#ede9fe',
+                            600: 'var(--brand-600)',
+                            700: '#6d28d9',
+                            900: '#4c1d95',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            /* Brand Colors */
+            --brand-600: #7c3aed;
+            --brand-700: #6d28d9;
+            --brand-50: #f5f3ff;
+
+            /* Light Theme Defaults */
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-sidebar: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --input-bg: #f8fafc;
+            --bg-hover: #f1f5f9;
+        }
+
+        [data-theme='dark'] {
+            --brand-600: #a78bfa;
+            --brand-50: #2e1065;
+            --bg-body: #050505;
+            --bg-card: #09090b;
+            --bg-sidebar: #09090b;
+            --text-main: #fafafa;
+            --text-muted: #a1a1aa;
+            --border-color: #27272a;
+            --glass-bg: rgba(9, 9, 11, 0.7);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+            --input-bg: #18181b;
+            --bg-hover: #18181b;
+        }
+
+        /* Override Slate utilities to match Zinc theme */
+        [data-theme='dark'] .bg-slate-700 {
+            background-color: #27272a !important;
+        }
+
+        /* Zinc 800 for better contrast */
+        [data-theme='dark'] .bg-slate-800 {
+            background-color: #18181b !important;
+        }
+
+        /* Zinc 900 */
+        [data-theme='dark'] .border-slate-600 {
+            border-color: #3f3f46 !important;
+        }
+
+        [data-theme='dark'] .border-slate-700 {
+            border-color: #27272a !important;
+        }
+
+        [data-theme='dark'] .text-slate-300 {
+            color: #d4d4d8 !important;
+        }
+
+        [data-theme='dark'] .text-slate-400 {
+            color: #a1a1aa !important;
+        }
+
+        * {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .bg-white {
+            background-color: var(--bg-card) !important;
+        }
+
+        .bg-slate-50 {
+            background-color: var(--bg-body) !important;
+        }
+
+        .text-slate-900,
+        .text-slate-800,
+        .text-slate-700 {
+            color: var(--text-main) !important;
+        }
+
+        .text-slate-600 {
+            color: var(--text-muted) !important;
+        }
+
+        .text-slate-500 {
+            color: var(--text-muted) !important;
+        }
+
+        .text-slate-400 {
+            color: var(--text-muted) !important;
+        }
+
+        .border-slate-200,
+        .border-slate-100 {
+            border-color: var(--border-color) !important;
+        }
+
+        /* Specific dark mode fixes for cards and inputs */
+        [data-theme='dark'] select,
+        [data-theme='dark'] input[type="text"],
+        [data-theme='dark'] .custom-checkbox {
+            background-color: var(--input-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+
+        [data-theme='dark'] .premium-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Animation for maximizing */
+        .modal-enter {
+            animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+        }
+
+        .premium-shadow {
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Prevent transform collision with centered elements */
+        .premium-shadow:hover:not(.left-1\/2):not(.-translate-x-1\/2) {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Group Hover Utilities */
+        .group:hover .group-hover\:opacity-100 {
+            opacity: 1 !important;
+        }
+
+        .group:hover .group-hover\:visible {
+            visibility: visible !important;
+        }
+
+        .group:hover .group-hover\:translate-y-0 {
+            transform: translateY(0) !important;
+        }
+
+        .group\/export:hover .group-hover\/export\:opacity-100 {
+            opacity: 1 !important;
+        }
+
+        .group\/export:hover .group-hover\/export\:visible {
+            visibility: visible !important;
+        }
+
+        .group\/export:hover .group-hover\/export\:translate-y-0 {
+            transform: translateY(0) !important;
+        }
+
+        /* Specific fix for the centered bulk action bar */
+        #bulk-actions-bar.premium-shadow:hover {
+            transform: translate(-50%, -4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes slideInFromTop {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideInFromTop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Skeleton Loader */
+        .skeleton {
+            background: linear-gradient(90deg,
+                    var(--bg-hover) 25%,
+                    var(--border-color) 37%,
+                    var(--bg-hover) 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .table-row-hover:hover {
+            background-color: var(--bg-hover) !important;
+            transition: all 0.2s ease;
+        }
+
+        /* Sidebar Toggle - Absolute Top-Left of Viewport */
+        #sidebar-toggle {
+            top: 85px;
+            left: 20px;
+            z-index: 50;
+        }
+
+        /* Tooltip Styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tooltip-content {
+            visibility: hidden;
+            width: auto;
+            min-width: max-content;
+            white-space: nowrap;
+            background-color: #0f172a;
+            /* Zinc 900 */
+            color: #fff;
+            text-align: center;
+            border-radius: 10px;
+            padding: 8px 14px;
+            position: absolute;
+            z-index: 100;
+            top: 140%;
+            /* Position BELOW the icon */
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1;
+            pointer-events: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .tooltip-content::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            /* Arrow points UP */
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: transparent transparent #0f172a transparent;
+        }
+
+        /* Top Tooltip Modifier */
+        .tooltip-top .tooltip-content {
+            top: auto;
+            bottom: 140%;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        .tooltip-top .tooltip-content::after {
+            top: 100%;
+            bottom: auto;
+            border-color: #0f172a transparent transparent transparent;
+        }
+
+        .tooltip-container:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .tooltip-top:hover .tooltip-content {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Ensure tooltips work in table headers */
+        thead {
+            position: relative;
+            z-index: 10;
+        }
+
+        th {
+            position: relative;
+        }
+
+        th .tooltip-container {
+            position: relative;
+            z-index: 100;
+        }
+
+        th .tooltip-content {
+            position: absolute !important;
+            z-index: 999999 !important;
+            color: #ffffff !important;
+            background-color: #0f172a !important;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        /* First column tooltip: align to LEFT to avoid left edge clipping */
+        th:first-child .tooltip-content {
+            left: 0 !important;
+            transform: translateY(0) !important;
+        }
+
+        /* Last column tooltip: align to RIGHT to avoid right edge clipping */
+        th:last-child .tooltip-content {
+            left: auto !important;
+            right: 0 !important;
+            transform: translateY(0) !important;
+        }
+
+        /* Allow rounded table container to show tooltips */
+        .rounded-\[40px\] {
+            overflow: visible !important;
+        }
+
+        /* Keep horizontal scroll only on the inner table element */
+        .overflow-x-auto {
+            overflow-x: auto !important;
+            overflow-y: visible !important;
+        }
+
+        [data-theme='dark'] th .tooltip-content {
+            background-color: #1e1e24 !important;
+            border-color: #27272a;
+            color: #ffffff !important;
+        }
+
+        [data-theme='dark'] .tooltip-content {
+            background-color: #1e1e24;
+            border-color: #27272a;
+        }
+
+        [data-theme='dark'] .tooltip-content::after {
+            border-color: transparent transparent #1e1e24 transparent;
+        }
+
+        [data-theme='dark'] .tooltip-top .tooltip-content::after {
+            border-color: #1e1e24 transparent transparent transparent;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 min-h-screen text-slate-900 font-sans no-scrollbar">
+
+    <!-- App Shell -->
+    <div class="flex flex-col min-h-screen">
+
+        <!-- Navbar -->
+        <nav class="sticky top-0 z-40 w-full border-b border-slate-200 glass">
+            <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center gap-6">
+                        <button id="home-brand" type="button"
+                            class="flex items-center gap-2 rounded-xl transition-all hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950"
+                            aria-label="Go to Store Location Dashboard">
+                            <div class="h-9 w-9 rounded-xl bg-brand-600 text-white grid place-items-center text-sm font-black shadow-sm">RO</div>
+                            <span class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wide">RetailOps</span>
+                        </button>
+                        <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+                        <div class="flex items-center">
+                            <span id="nav-dashboard-title"
+                                class="text-lg font-bold text-slate-800 tracking-tight">Store Location Dashboard</span>
+                            <span id="nav-dashboard-badge"
+                                class="hidden sm:inline-block ml-3 text-[10px] font-bold px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg uppercase tracking-widest border border-indigo-100">Priority</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <!-- Dashboard View Switcher -->
+                        <div
+                            class="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60 mr-2">
+                            <button id="view-priority"
+                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap">
+                                Store Location Dashboard
+                            </button>
+                            <button id="view-fulfillment"
+                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap">
+                                Fulfillment Dashboard
+                            </button>
+                            <button id="view-intelligence"
+                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap">
+                                Intelligence
+                            </button>
+                        </div>
+
+                        <!-- User Profile -->
+                        <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+                            <div class="text-right hidden sm:block">
+                                <p id="user-name" class="text-sm font-semibold text-slate-900 leading-none">Loading...
+                                </p>
+                                <p id="user-email" class="text-xs text-slate-500 mt-1 italic">Please wait</p>
+                            </div>
+                            <div
+                                class="h-10 w-10 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white font-bold ring-2 ring-white">
+                                <span id="user-initials">EP</span>
+                            </div>
+
+                            <!-- Theme Toggle -->
+                            <button id="theme-toggle"
+                                class="p-2 text-slate-400 hover:text-brand-600 transition-all hover:scale-110 active:scale-90">
+                                <svg id="sun-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.95 16.95l.707.707M7.05 7.05l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                                </svg>
+                                <svg id="moon-icon" class="w-5 h-5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                                </svg>
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="flex-grow max-w-[1600px] mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-8">
+
+            <!-- Fulfillment View (Hidden by default) -->
+            <div id="fulfillment-view" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div id="fulfillment-summary-view" class="space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div class="flex flex-col gap-2">
+                            <h2 class="text-3xl font-black text-slate-900">Fulfillment Performance</h2>
+                            <div class="flex items-center gap-3">
+                                <p class="text-slate-500 font-medium">Top performing locations offering priority
+                                    fulfillment.</p>
+                                <div class="h-4 w-px bg-slate-200 mx-2"></div>
+                                <label
+                                    class="flex items-center gap-2 cursor-pointer group bg-white/50 dark:bg-slate-800/50 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-brand-300 transition-all">
+                                    <div class="relative inline-flex items-center cursor-pointer">
+                                        <input id="fulfillment-only-toggle" type="checkbox" class="sr-only peer" checked>
+                                        <div
+                                            class="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-600">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-xs font-bold text-slate-600 group-hover:text-brand-600 transition-colors uppercase tracking-tight">Fulfillment
+                                        SKUs Only</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-brand-50 dark:bg-brand-900/40 px-6 py-4 rounded-3xl border border-brand-100 dark:border-brand-800/60 flex flex-col items-center">
+                            <span
+                                class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-1">Fulfillment
+                                Locations</span>
+                            <span id="total-locations-count"
+                                class="text-2xl font-black text-brand-900 dark:text-slate-100">-</span>
+                        </div>
+                    </div>
+                    <div id="fulfillment-locations-container">
+                        <!-- Location cards will be rendered here -->
+                    </div>
+                </div>
+
+                <div id="fulfillment-detail-view" class="hidden">
+                    <!-- Individual location drill-down will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Intelligence View -->
+            <div id="intelligence-view" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div id="intelligence-dashboard-container">
+                    <!-- Intelligence trends will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Priority View -->
+            <div id="priority-view" class="space-y-8">
+                <!-- Error Banner -->
+                <div id="error-banner"
+                    class="hidden bg-red-50 border border-red-200 rounded-2xl p-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                </div>
+
+                <!-- Dashboard Header & Stats -->
+                <div id="stats-container" class="space-y-6 transition-all duration-300">
+                    <!-- Top Stats Row -->
+                    <div class="grid grid-cols-1 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <!-- Global Total Card -->
+                            <div
+                                class="bg-gradient-to-br from-indigo-500 to-brand-600 rounded-3xl border border-white/10 p-4 flex flex-col justify-between shadow-lg premium-shadow h-28 relative overflow-hidden group">
+                                <div
+                                    class="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
+                                    <svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <p class="text-[9px] font-bold text-white/80 uppercase tracking-widest z-10">Total
+                                    Store Locations</p>
+                                <h3 id="total-store-locations-count" class="text-3xl font-bold text-white leading-none z-10">--
+                                </h3>
+                                <div class="w-8 h-1 bg-white/40 rounded-full z-10"></div>
+                            </div>
+
+                            <!-- Status Distribution Cards (Dynamic) -->
+                            <div id="status-distribution-cards"
+                                class="md:col-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                                <!-- Status cards will be dynamically populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Filtered Total Card -->
+                        <div id="filtered-stats-card"
+                            class="bg-indigo-50/50 dark:bg-brand-900/10 w-fit min-w-[200px] px-6 rounded-3xl border border-brand-100 dark:border-brand-800 p-3 flex flex-row items-center gap-4 shadow-md premium-shadow h-16 animate-in fade-in slide-in-from-top-4 duration-500 hidden">
+                            <div class="flex-1">
+                                <p
+                                    class="text-[9px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest">
+                                    Filtered Store Locations</p>
+                                <h3 id="filtered-locations-count"
+                                    class="text-2xl font-bold text-brand-700 dark:text-brand-300 leading-none">--</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        <!-- Sidebar Toggle Button -->
+                        <button id="sidebar-toggle"
+                            class="fixed z-[60] bg-brand-600 text-white p-3.5 rounded-2xl shadow-xl hover:bg-brand-700 transition-all hover:scale-110 active:scale-95 flex items-center gap-2 lg:hidden border border-white/10">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                                </path>
+                            </svg>
+                            <span class="text-sm font-bold pr-1">Filters</span>
+                        </button>
+
+                        <!-- Left: Filters Workspace -->
+                        <aside id="sidebar" class="lg:col-span-1 transition-all duration-300 origin-left space-y-6">
+                            <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm sticky top-24 pb-20">
+                                <div class="flex items-center justify-between mb-5">
+                                    <div class="flex items-center gap-2">
+                                        <h2 class="text-lg font-medium text-slate-900 font-display">Filters</h2>
+                                        <button id="minimize-sidebar"
+                                            class="p-1 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors hidden lg:block"
+                                            title="Minimize Sidebar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <button id="clear-filters"
+                                        class="text-xs font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-2.5 py-1 rounded-lg transition-all">Reset
+                                        All</button>
+                                </div>
+
+                                <div class="border-b border-slate-100 -mx-5 px-5 mb-6 overflow-x-auto no-scrollbar">
+                                    <div class="flex gap-6 min-w-max">
+                                        <button data-tab="location"
+                                            class="filter-tab-btn pb-3 text-xs font-bold uppercase tracking-wider text-brand-600 border-b-2 border-brand-600 transition-all">Location</button>
+                                        <button data-tab="status"
+                                            class="filter-tab-btn pb-3 text-xs font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-all">Status</button>
+                                        <button data-tab="metadata"
+                                            class="filter-tab-btn pb-3 text-xs font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-all">Metadata</button>
+                                    </div>
+                                </div>
+
+                                <div id="filter-tabs-content">
+                                    <!-- Location & Type Tab -->
+                                    <div id="tab-location" class="filter-tab-content space-y-6">
+                                        <div class="space-y-4">
+                                            <h3
+                                                class="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                <span class="w-3 h-px bg-slate-900 dark:bg-slate-200"></span> Location &
+                                                Type
+                                            </h3>
+                                            <div class="grid grid-cols-1 gap-3">
+                                                <div>
+                                                    <label
+                                                        class="block text-[11px] font-black text-slate-700 dark:text-slate-200 mb-3 ml-1 uppercase tracking-widest">Region</label>
+                                                    <div id="filter-region-container" class="flex flex-wrap gap-1.5">
+                                                    </div>
+                                                </div>
+                                                <!-- Country Accordion -->
+                                                <div
+                                                    class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50 mt-4">
+                                                    <button id="accordion-toggle-country"
+                                                        class="w-full px-4 py-3.5 flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                                        <span>COUNTRY</span>
+                                                        <svg id="accordion-icon-country"
+                                                            class="w-4 h-4 transition-transform text-slate-400"
+                                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                        </svg>
+                                                    </button>
+                                                    <div id="accordion-content-country"
+                                                        class="hidden border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 max-h-60 overflow-y-auto no-scrollbar">
+                                                        <div
+                                                            class="sticky top-0 bg-white dark:bg-slate-800 z-10 px-4 pt-4 pb-2 border-b border-slate-50 dark:border-slate-700/50">
+                                                            <input type="text" id="country-search"
+                                                                placeholder="Demand Signal country..."
+                                                                class="w-full text-xs px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-brand-500 transition-colors">
+                                                        </div>
+                                                        <div id="filter-country-container"
+                                                            class="flex flex-wrap gap-1.5 p-4"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="space-y-2">
+                                                <label
+                                                    class="block text-[11px] font-black text-slate-700 dark:text-slate-200 mb-3 ml-1 mt-6 uppercase tracking-widest">Store Format
+                                                    Type</label>
+                                                <div id="filter-storeFormats-container"
+                                                    class="flex flex-wrap gap-1.5"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Status & Publishing Tab -->
+                                    <div id="tab-status" class="filter-tab-content hidden space-y-6">
+                                        <div class="space-y-4">
+                                            <h3
+                                                class="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                <span class="w-3 h-px bg-slate-900 dark:bg-slate-200"></span> Status &
+                                                Publishing
+                                            </h3>
+                                            <div class="grid grid-cols-1 gap-3">
+                                                <div>
+                                                    <label
+                                                        class="block text-[11px] font-black text-slate-700 dark:text-slate-200 mb-3 ml-1 uppercase tracking-widest">Store Location
+                                                        Status</label>
+                                                    <div id="filter-status-container" class="flex flex-wrap gap-1.5">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-[11px] font-black text-slate-700 dark:text-slate-200 mb-3 ml-1 mt-6 uppercase tracking-widest">Publish
+                                                        Status</label>
+                                                    <div id="filter-listingStatus-container"
+                                                        class="flex flex-wrap gap-1.5"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Metadata & Access Tab -->
+                                    <div id="tab-metadata" class="filter-tab-content hidden space-y-6">
+                                        <div class="space-y-4">
+                                            <h3
+                                                class="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                <span class="w-3 h-px bg-slate-900 dark:bg-slate-200"></span> Metadata &
+                                                Access
+                                            </h3>
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <label
+                                                        class="block text-[11px] font-black text-slate-700 dark:text-slate-200 mb-3 ml-1 uppercase tracking-widest">Source
+                                                        Platform</label>
+                                                    <div id="filter-dataSource-container"
+                                                        class="flex flex-wrap gap-1.5"></div>
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-[11px] font-black text-slate-700 dark:text-slate-200 mb-3 ml-1 mt-6 uppercase tracking-widest">Tags</label>
+                                                    <div id="filter-tags-container" class="flex flex-wrap gap-1.5">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div
+                                                class="border border-slate-100 rounded-xl overflow-hidden bg-slate-50 mt-4">
+                                                <button id="accordion-toggle-store-format"
+                                                    class="w-full px-4 py-3.5 flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                                    <span>Fulfillment Partners</span>
+                                                    <svg id="accordion-icon-store-format"
+                                                        class="w-4 h-4 transition-transform text-slate-400" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    </svg>
+                                                </button>
+                                                <div id="accordion-content-store-format"
+                                                    class="hidden border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 max-h-60 overflow-y-auto no-scrollbar">
+                                                    <div
+                                                        class="sticky top-0 bg-white dark:bg-slate-800 z-10 px-4 pt-4 pb-2 border-b border-slate-50 dark:border-slate-700/50">
+                                                        <input type="text" id="fulfillment-search"
+                                                            placeholder="Demand Signal..."
+                                                            class="w-full text-xs px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-brand-500 transition-colors">
+                                                    </div>
+                                                    <div id="filter-fulfillmentPartners-container"
+                                                        class="flex flex-wrap gap-1.5 p-4"></div>
+                                                </div>
+                                            </div>
+                                            <div class="pt-1">
+                                                <label
+                                                    class="flex items-center gap-3 cursor-pointer group bg-slate-50 p-3 rounded-xl border border-transparent hover:border-brand-200 transition-all">
+                                                    <div class="relative inline-flex items-center cursor-pointer">
+                                                        <input id="filter-priorityFulfillment" type="checkbox"
+                                                            class="sr-only peer">
+                                                        <div
+                                                            class="w-10 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-600">
+                                                        </div>
+                                                    </div>
+                                                    <span
+                                                        class="text-xs font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Show
+                                                        Priority Fulfillment</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- Right: Content Workspace -->
+                        <div id="main-content" class="lg:col-span-3 space-y-6 transition-all duration-300">
+                            <!-- Featured Section: Store Locations by Country -->
+                            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                                <div class="flex items-center justify-between mb-8">
+                                    <div class="flex items-center gap-4">
+                                        <div class="p-3 bg-brand-50 rounded-2xl text-brand-600">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2 2 2 0 012 2v.5a2.5 2.5 0 002.5 2.5h1.065">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3
+                                                class="text-xs font-medium text-slate-500 uppercase tracking-[0.2em] mb-1">
+                                                Primary Visualization</h3>
+                                            <h2 class="text-2xl font-bold text-slate-800">Store Locations by Country</h2>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <button data-maximize="chart-country" data-title="Store Locations by Country"
+                                            class="chart-maximize-btn p-2 hover:bg-slate-100 rounded-lg transition-all text-slate-400 hover:text-brand-600">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                        <button id="toggle-countries"
+                                            class="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-brand-50 text-slate-600 hover:text-brand-700 rounded-xl transition-all font-medium text-sm border border-slate-100 hover:border-brand-200">
+                                            <span id="country-toggle-text">Show All Countries</span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="h-80 w-full relative">
+                                    <canvas id="chart-country"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Data Table -->
+                            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                                <div
+                                    class="px-6 py-5 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
+                                    <div>
+                                        <div class="flex items-center gap-3">
+                                            <h2 class="text-xl font-bold text-slate-900">Store Location List</h2>
+                                            <span id="header-location-count"
+                                                class="px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-bold border border-brand-100 hidden">
+                                                0 Store Locations
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-slate-500 font-medium mt-0.5">Live store-format data based
+                                            on applied filters</p>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <button id="select-all-trigger"
+                                            class="text-xs font-bold text-brand-600 hover:text-brand-800 transition-colors uppercase tracking-wider">Select
+                                            All</button>
+                                        <div class="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
+                                        <div class="flex items-center gap-1">
+                                            <button id="header-prev"
+                                                class="p-1.5 text-slate-400 hover:text-brand-600 disabled:opacity-30 rounded-lg transition-colors hover:bg-slate-50"
+                                                title="Previous Page">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                                </svg>
+                                            </button>
+                                            <div id="pagination-status"
+                                                class="text-xs font-medium text-slate-500 uppercase tracking-tighter min-w-[80px] text-center">
+                                                Page 1 of --</div>
+                                            <button id="header-next"
+                                                class="p-1.5 text-slate-400 hover:text-brand-600 disabled:opacity-30 rounded-lg transition-colors hover:bg-slate-50"
+                                                title="Next Page">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Selection Banner (Hidden by default) -->
+                                <div id="selection-banner"
+                                    class="bg-brand-50/50 border-y border-brand-100 px-6 py-2.5 flex items-center justify-between hidden">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white text-[10px] font-bold">
+                                            !</div>
+                                        <p id="selection-msg" class="text-xs font-semibold text-brand-700">All 15
+                                            results on this page are selected.</p>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <button id="select-all-matching-btn"
+                                            class="text-xs font-black text-brand-600 hover:text-brand-800 uppercase tracking-widest transition-colors">Select
+                                            all <span id="total-matched-text">0</span> matched locations</button>
+                                        <button id="clear-selection-btn"
+                                            class="text-xs font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors hidden">Clear
+                                            selection</button>
+                                    </div>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr
+                                                class="bg-slate-50 border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+                                                <th class="px-4 py-4 w-12 text-center"></th>
+                                                <th data-sort="name"
+                                                    class="px-4 py-4 text-xs font-medium text-slate-600 dark:text-slate-200 uppercase tracking-widest cursor-pointer hover:text-brand-600 transition-colors">
+                                                    Name & Organization</th>
+                                                <th data-sort="country"
+                                                    class="px-4 py-4 text-xs font-medium text-slate-600 dark:text-slate-200 uppercase tracking-widest cursor-pointer hover:text-brand-600 transition-colors">
+                                                    Country</th>
+                                                <th data-sort="status"
+                                                    class="px-4 py-4 text-xs font-medium text-slate-600 dark:text-slate-200 uppercase tracking-widest cursor-pointer hover:text-brand-600 transition-colors text-center">
+                                                    Status</th>
+                                                <th data-sort="listingStatus"
+                                                    class="px-4 py-4 text-xs font-medium text-slate-600 dark:text-slate-200 uppercase tracking-widest cursor-pointer hover:text-brand-600 transition-colors text-center">
+                                                    Listing Status</th>
+                                                <th
+                                                    class="px-4 py-4 text-xs font-medium text-slate-600 dark:text-slate-200 uppercase tracking-widest">
+                                                    Data Source</th>
+                                                <th
+                                                    class="px-4 py-4 text-xs font-medium text-slate-600 dark:text-slate-200 uppercase tracking-widest">
+                                                    Store Format</th>
+                                                <th
+                                                    class="px-4 py-4 text-xs font-medium text-slate-600 dark:text-slate-200 uppercase tracking-widest">
+                                                    Tags</th>
+                                                <th data-sort="performanceScore"
+                                                    class="px-4 py-4 text-xs font-medium text-slate-600 dark:text-slate-200 uppercase tracking-widest cursor-pointer hover:text-brand-600 transition-colors text-center">
+                                                    Score</th>
+                                                <th
+                                                    class="px-4 py-4 text-xs font-medium text-slate-600 dark:text-slate-200 uppercase tracking-widest text-center">
+                                                    Priority Fulfillment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="locations-table" class="divide-y divide-slate-100">
+                                            <tr class="animate-pulse">
+                                                <td colspan="10" class="px-6 py-12 text-center text-slate-400 italic">
+                                                    Synchronizing dashboard data...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer
+            class="mt-auto px-8 py-6 border-t border-slate-200 text-center text-slate-400 text-xs font-medium uppercase tracking-[0.3em]">
+            &copy; 2026 RetailOps Retail Operations
+        </footer>
+    </div>
+
+    <!-- Chart Maximize Modal -->
+    <div id="chart-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10">
+        <div id="modal-overlay" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div
+            class="relative bg-white w-full max-w-6xl rounded-[40px] shadow-2xl overflow-hidden border border-slate-200 modal-enter">
+            <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div>
+                    <h2 id="modal-chart-title" class="text-2xl font-bold text-slate-800 tracking-tight">Chart Preview
+                    </h2>
+                    <p class="text-[10px] font-medium text-slate-500 uppercase tracking-widest mt-1">Detailed Data
+                        Analysis</p>
+                </div>
+                <button id="close-modal-btn"
+                    class="p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl shadow-sm text-slate-500 dark:text-slate-200 hover:text-red-500 dark:hover:text-red-400 transition-all border border-slate-200 dark:border-slate-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-10 h-[70vh] relative bg-white">
+                <canvas id="maximized-chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Module -->
+    <script type="module" src="/js/main.js"></script>
+</body>
+
+</html>
