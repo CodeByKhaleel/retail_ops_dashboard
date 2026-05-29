@@ -1,35 +1,88 @@
-# Retail Operations Dashboard
+# PulseOps — Retail Operations Intelligence Dashboard
 
-A self-contained retail analytics dashboard built as a public portfolio demo. It showcases store-location performance, fulfillment operations, customer demand intelligence, filtering, pagination, sorting, and chart aggregation using deterministic generated data.
+> Enterprise-grade retail analytics dashboard built with TypeScript and Express using deterministic generated data for safe public showcasing.
 
-This project is intentionally sanitized. It does not include company data, workplace databases, internal services, production credentials, OAuth configuration, Firebase, MongoDB, Redis, or internal branding.
+PulseOps is a self-contained retail operations dashboard designed to demonstrate backend API architecture, dashboard UX, analytics aggregation, filtering systems, chart-driven insights, fulfillment workflows, and deployment readiness — without exposing workplace systems or proprietary data.
 
-## What This Demonstrates
+---
 
-- Express API with TypeScript contracts
-- Deterministic in-memory demo data
-- Indexed filtering and sorting
-- Pagination for dashboard tables
-- Chart aggregation endpoints
-- Fulfillment drilldown workflow
-- Demand intelligence views for locations and SKUs
-- Dark and light theme support
-- Jest coverage for retail filtering and services
-- Docker packaging
-- Vercel-compatible deployment
+# Dashboard Preview
 
-## Tech Stack
+## Dark Mode
 
-- Node.js
-- Express
-- TypeScript
-- Jest
-- Chart.js
-- Tailwind runtime for the static dashboard UI
-- Docker and Docker Compose
-- Vercel serverless adapter
+![Dashboard Dark Mode](./assets/dashboard-dark.png)
 
-## Local Setup
+## Light Mode
+
+![Dashboard Light Mode](./assets/dashboard-light.png)
+
+## Fulfillment Analytics
+
+![Fulfillment Analytics](./assets/fulfillment-tab.png)
+
+## Demand Intelligence
+
+![Demand Intelligence](./assets/demand-intelligence.png)
+
+---
+
+# Features
+
+* Retail operations analytics dashboard
+* Advanced filtering and sorting
+* Pagination for large datasets
+* KPI and chart aggregation APIs
+* Fulfillment intelligence workflows
+* Demand analytics for locations and SKUs
+* Deterministic mock-data engine
+* Dark and light theme support
+* Dockerized development environment
+* Vercel deployment support
+* Jest-based service and API testing
+* Fully sanitized public demo architecture
+
+---
+
+# Tech Stack
+
+## Backend
+
+* Node.js
+* Express
+* TypeScript
+
+## Frontend
+
+* Tailwind CSS
+* Chart.js
+
+## Testing & Tooling
+
+* Jest
+* Docker
+* Docker Compose
+* Vercel Serverless Adapter
+
+---
+
+# What This Project Demonstrates
+
+This project was designed to showcase practical dashboard engineering skills including:
+
+* API architecture design
+* Analytics aggregation patterns
+* Table filtering and pagination systems
+* Dashboard state management
+* Mock data simulation
+* Fulfillment and operations workflows
+* Deployment packaging
+* Dockerized development
+* Frontend/backend integration
+* Production-style project structuring
+
+---
+
+# Local Development
 
 Install dependencies:
 
@@ -37,7 +90,7 @@ Install dependencies:
 npm install
 ```
 
-Start the development server:
+Start development server:
 
 ```bash
 npm run dev
@@ -49,11 +102,15 @@ Open:
 http://localhost:7778
 ```
 
-The app starts in demo mode by default. No login, database, cache, or third-party auth provider is required.
+The dashboard runs entirely in demo mode with generated in-memory data.
 
-## Environment
+No database, authentication provider, cache layer, or external services are required.
 
-The demo works without creating a local `.env` file. Optional values are documented in `.env.example`:
+---
+
+# Environment Configuration
+
+Optional `.env` values:
 
 ```bash
 NODE_ENV=development
@@ -62,9 +119,17 @@ AUTH_MODE=disabled
 LOG_LEVEL=info
 ```
 
-Keep `AUTH_MODE=disabled` for the public portfolio demo.
+Keep:
 
-## Scripts
+```bash
+AUTH_MODE=disabled
+```
+
+for the public portfolio version.
+
+---
+
+# Available Scripts
 
 ```bash
 npm run dev
@@ -73,13 +138,29 @@ npm start
 npm test
 ```
 
-`npm run build` compiles TypeScript into `dist`.
+## Build
 
-`npm start` runs the compiled Express server.
+```bash
+npm run build
+```
 
-## Docker
+Compiles TypeScript into:
 
-Build and run with Docker Compose:
+```text
+dist/
+```
+
+## Start Production Build
+
+```bash
+npm start
+```
+
+---
+
+# Docker Setup
+
+Run locally using Docker:
 
 ```bash
 docker compose up --build
@@ -91,41 +172,46 @@ Open:
 http://localhost:7778
 ```
 
-The Docker image runs only the sanitized demo app and generated in-memory data.
+The Docker environment runs only sanitized generated demo data.
 
-## Vercel Deployment
+---
 
-This repository includes `vercel.json` and `api/index.ts`.
+# Vercel Deployment
 
-Recommended Vercel settings:
+Included:
+
+* `vercel.json`
+* `api/index.ts`
+
+Recommended configuration:
 
 ```text
 Build Command: npm run build
-Output Directory: public
 Install Command: npm install
+Output Directory: public
 ```
 
-No Vercel environment variables are required for the demo.
+No environment variables are required for the public demo deployment.
 
-Do not add workplace secrets, production database URLs, OAuth credentials, Firebase service accounts, or internal environment variables to Vercel.
+---
 
-## Public API
+# Public API
 
-Retail dashboard:
+## Retail Dashboard
 
 ```text
 GET /api/retail/locations
 GET /api/retail/locations/charts
 ```
 
-Fulfillment:
+## Fulfillment Analytics
 
 ```text
 GET /api/retail/fulfillment/summary
 GET /api/retail/fulfillment/location/:locationId
 ```
 
-Demand intelligence:
+## Demand Intelligence
 
 ```text
 GET /api/retail/demand/weeks
@@ -134,53 +220,87 @@ GET /api/retail/demand/categories
 GET /api/retail/demand/trend/:locationName
 ```
 
-Health:
+## Health Check
 
 ```text
 GET /health
 ```
 
-## Demo Data
+---
 
-The dashboard generates retail-focused demo data at runtime:
+# Demo Dataset
 
-- 72 store locations
-- Multiple countries and regions
-- Store statuses such as Active, Paused, Under Review, and Closed
-- Store formats such as Flagship, Outlet, Marketplace, and Franchise
-- Tags such as High Growth, At Risk, Premium, Seasonal, and Omnichannel
-- Fulfillment summaries and SKU leaderboards
-- Demand rankings for locations and products
+The application generates deterministic retail demo data at runtime including:
 
-The data is deterministic so tests and demos are repeatable.
+* 72 retail store locations
+* Regional and country segmentation
+* Store lifecycle statuses
+* Multi-format retail operations
+* Fulfillment metrics
+* SKU leaderboards
+* Demand trend analytics
+* Category-based performance insights
 
-## Testing
+The generated dataset is deterministic to ensure:
 
-Run:
+* repeatable demos
+* stable screenshots
+* predictable testing
+* reproducible analytics
+
+---
+
+# Testing
+
+Run test suite:
 
 ```bash
 npm test
 ```
 
-Coverage focuses on:
+Coverage includes:
 
-- Region, country, status, source, format, tag, and priority fulfillment filters
-- Sorting by performance score and location name
-- Pagination behavior
-- Chart aggregation
-- Demand intelligence response shape
+* Filtering systems
+* Sorting behavior
+* Pagination logic
+* Chart aggregation
+* Demand analytics services
+* Fulfillment summaries
+* Response structures
 
-## Portfolio Positioning
+---
 
-This is a sanitized public demo inspired by real retail operations dashboard patterns. It is designed to show architecture, API design, frontend interactions, deployment packaging, and testing approach without exposing private company systems or data.
+# Portfolio Positioning
 
-Suggested public description:
+PulseOps is a sanitized portfolio project inspired by enterprise retail analytics systems.
 
-```text
-Retail Operations Dashboard is a self-contained demo rebuilt with generated data to showcase backend API design, dashboard UX, chart aggregation, filtering, pagination, Docker packaging, and Vercel deployment readiness.
-```
+It demonstrates:
 
-## Privacy And Secrets
+* scalable dashboard architecture
+* analytics-focused API design
+* operational intelligence workflows
+* deployment readiness
+* testing strategy
+* modern dashboard engineering patterns
+
+without exposing any internal workplace infrastructure or proprietary business data.
+
+---
+
+# Privacy & Sanitization
+
+This repository intentionally excludes:
+
+* workplace databases
+* company data
+* production credentials
+* OAuth configuration
+* Firebase
+* MongoDB
+* Redis
+* internal branding
+* secrets
+* infrastructure references
 
 Before publishing, verify:
 
@@ -188,13 +308,18 @@ Before publishing, verify:
 rg "company-name|internal|secret|firebase|mongo|redis|oauth|client_secret|private_key|password|token" .
 ```
 
-Expected exclusions:
+Never commit:
 
-- `.env`
-- `node_modules`
-- `dist`
-- `coverage`
-- local editor files
-- git metadata
+* `.env`
+* production secrets
+* API credentials
+* workplace configuration
+* internal assets
 
-Never commit local secrets or workplace configuration.
+---
+
+# Suggested GitHub Repository Description
+
+```text
+Enterprise-grade retail operations dashboard showcasing analytics APIs, filtering systems, chart aggregation, fulfillment workflows, Docker packaging, and Vercel deployment using deterministic generated data.
+```
