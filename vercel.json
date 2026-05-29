@@ -1,14 +1,21 @@
 {
+  "version": 2,
   "buildCommand": "npm run build",
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
   "functions": {
     "api/index.ts": {
       "includeFiles": "public/**"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/api"
+      "src": "/(.*)",
+      "dest": "api/index.ts"
     }
   ]
 }
