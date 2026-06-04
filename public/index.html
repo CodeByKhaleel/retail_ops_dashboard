@@ -428,6 +428,80 @@
         [data-theme='dark'] .tooltip-top .tooltip-content::after {
             border-color: #1e1e24 transparent transparent transparent;
         }
+
+        #mobile-sidebar-backdrop {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        body.mobile-sidebar-open #mobile-sidebar-backdrop {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 1023px) {
+            #sidebar {
+                position: fixed;
+                inset: 0 auto 0 0;
+                z-index: 80;
+                width: min(88vw, 380px);
+                max-width: 100%;
+                padding: 1rem;
+                background: var(--bg-body);
+                overflow-y: auto;
+                transform: translateX(-105%);
+                box-shadow: 0 25px 60px rgba(15, 23, 42, 0.28);
+            }
+
+            body.mobile-sidebar-open #sidebar {
+                transform: translateX(0);
+            }
+
+            body.mobile-sidebar-open {
+                overflow: hidden;
+            }
+        }
+
+        @media (max-width: 640px) {
+            main {
+                padding-left: 0.875rem !important;
+                padding-right: 0.875rem !important;
+            }
+
+            .mobile-compact-card {
+                border-radius: 1.25rem !important;
+                padding: 1rem !important;
+            }
+
+            .mobile-chart-height {
+                height: 18rem !important;
+            }
+
+            .mobile-table-scroll {
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .mobile-table-scroll table {
+                min-width: 980px;
+            }
+
+            #chart-modal {
+                align-items: flex-end;
+                padding: max(0.75rem, env(safe-area-inset-bottom)) 0.75rem 0.75rem;
+            }
+
+            #chart-modal .modal-panel {
+                border-radius: 1.5rem 1.5rem 0 0 !important;
+                max-height: 92vh;
+            }
+
+            #sidebar-toggle {
+                top: auto;
+                left: 1rem;
+                bottom: max(1rem, env(safe-area-inset-bottom));
+            }
+        }
     </style>
 </head>
 
@@ -439,50 +513,50 @@
         <!-- Navbar -->
         <nav class="sticky top-0 z-40 w-full border-b border-slate-200 glass">
             <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center gap-6">
+                <div class="flex flex-wrap justify-between gap-3 py-3 lg:h-16 lg:flex-nowrap lg:py-0">
+                    <div class="flex min-w-0 items-center gap-3 sm:gap-6">
                         <button id="home-brand" type="button"
-                            class="flex items-center gap-2 rounded-xl transition-all hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950"
+                            class="flex shrink-0 items-center gap-2 rounded-xl transition-all hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950"
                             aria-label="Go to Store Location Dashboard">
                             <div class="h-9 w-9 rounded-xl bg-brand-600 text-white grid place-items-center text-sm font-black shadow-sm">RO</div>
-                            <span class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wide">RetailOps</span>
+                            <span class="hidden text-sm font-black text-slate-900 dark:text-white uppercase tracking-wide sm:inline">RetailOps</span>
                         </button>
                         <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
-                        <div class="flex items-center">
+                        <div class="flex min-w-0 items-center">
                             <span id="nav-dashboard-title"
-                                class="text-lg font-bold text-slate-800 tracking-tight">Store Location Dashboard</span>
+                                class="truncate text-base font-bold text-slate-800 tracking-tight sm:text-lg">Store Location Dashboard</span>
                             <span id="nav-dashboard-badge"
                                 class="hidden sm:inline-block ml-3 text-[10px] font-bold px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg uppercase tracking-widest border border-indigo-100">Priority</span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4">
+                    <div class="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-4 lg:flex-none">
                         <!-- Dashboard View Switcher -->
                         <div
-                            class="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60 mr-2">
+                            class="flex max-w-full items-center gap-1 overflow-x-auto no-scrollbar bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60 lg:mr-2">
                             <button id="view-priority"
-                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap">
+                                class="px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap">
                                 Store Location Dashboard
                             </button>
                             <button id="view-fulfillment"
-                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap">
+                                class="px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap">
                                 Fulfillment Dashboard
                             </button>
                             <button id="view-intelligence"
-                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap">
+                                class="px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap">
                                 Intelligence
                             </button>
                         </div>
 
                         <!-- User Profile -->
-                        <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+                        <div class="flex shrink-0 items-center gap-2 pl-2 sm:gap-3 sm:pl-4 sm:border-l sm:border-slate-200">
                             <div class="text-right hidden sm:block">
                                 <p id="user-name" class="text-sm font-semibold text-slate-900 leading-none">Loading...
                                 </p>
                                 <p id="user-email" class="text-xs text-slate-500 mt-1 italic">Please wait</p>
                             </div>
                             <div
-                                class="h-10 w-10 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white font-bold ring-2 ring-white">
+                                class="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white font-bold ring-2 ring-white">
                                 <span id="user-initials">EP</span>
                             </div>
 
@@ -507,7 +581,7 @@
             </div>
         </nav>
 
-        <main class="flex-grow max-w-[1600px] mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-8">
+        <main class="flex-grow max-w-[1600px] mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
 
             <!-- Fulfillment View (Hidden by default) -->
             <div id="fulfillment-view" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -570,7 +644,7 @@
                 <div id="stats-container" class="space-y-6 transition-all duration-300">
                     <!-- Top Stats Row -->
                     <div class="grid grid-cols-1 gap-6">
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                             <!-- Global Total Card -->
                             <div
                                 class="bg-gradient-to-br from-indigo-500 to-brand-600 rounded-3xl border border-white/10 p-4 flex flex-col justify-between shadow-lg premium-shadow h-28 relative overflow-hidden group">
@@ -591,7 +665,7 @@
 
                             <!-- Status Distribution Cards (Dynamic) -->
                             <div id="status-distribution-cards"
-                                class="md:col-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                                class="sm:col-span-2 md:col-span-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                                 <!-- Status cards will be dynamically populated here -->
                             </div>
                         </div>
@@ -621,9 +695,13 @@
                             <span class="text-sm font-bold pr-1">Filters</span>
                         </button>
 
+                        <button id="mobile-sidebar-backdrop" type="button"
+                            class="fixed inset-0 z-[70] bg-slate-950/45 backdrop-blur-sm lg:hidden"
+                            aria-label="Close filters"></button>
+
                         <!-- Left: Filters Workspace -->
                         <aside id="sidebar" class="lg:col-span-1 transition-all duration-300 origin-left space-y-6">
-                            <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm sticky top-24 pb-20">
+                            <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm sticky top-24 pb-20 mobile-compact-card">
                                 <div class="flex items-center justify-between mb-5">
                                     <div class="flex items-center gap-2">
                                         <h2 class="text-lg font-medium text-slate-900 font-display">Filters</h2>
@@ -633,6 +711,14 @@
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                                            </svg>
+                                        </button>
+                                        <button id="close-mobile-sidebar"
+                                            class="p-2 hover:bg-slate-100 rounded-xl text-slate-500 transition-colors lg:hidden"
+                                            aria-label="Close filters">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12"></path>
                                             </svg>
                                         </button>
                                     </div>
@@ -802,9 +888,9 @@
                         <!-- Right: Content Workspace -->
                         <div id="main-content" class="lg:col-span-3 space-y-6 transition-all duration-300">
                             <!-- Featured Section: Store Locations by Country -->
-                            <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                                <div class="flex items-center justify-between mb-8">
-                                    <div class="flex items-center gap-4">
+                            <div class="bg-white rounded-3xl border border-slate-200 p-4 sm:p-6 shadow-sm mobile-compact-card">
+                                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
+                                    <div class="flex min-w-0 items-center gap-3 sm:gap-4">
                                         <div class="p-3 bg-brand-50 rounded-2xl text-brand-600">
                                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -812,14 +898,14 @@
                                                 </path>
                                             </svg>
                                         </div>
-                                        <div>
+                                        <div class="min-w-0">
                                             <h3
                                                 class="text-xs font-medium text-slate-500 uppercase tracking-[0.2em] mb-1">
                                                 Primary Visualization</h3>
-                                            <h2 class="text-2xl font-bold text-slate-800">Store Locations by Country</h2>
+                                            <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Store Locations by Country</h2>
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                                         <button data-maximize="chart-country" data-title="Store Locations by Country"
                                             class="chart-maximize-btn p-2 hover:bg-slate-100 rounded-lg transition-all text-slate-400 hover:text-brand-600">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -829,7 +915,7 @@
                                             </svg>
                                         </button>
                                         <button id="toggle-countries"
-                                            class="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-brand-50 text-slate-600 hover:text-brand-700 rounded-xl transition-all font-medium text-sm border border-slate-100 hover:border-brand-200">
+                                            class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-slate-50 hover:bg-brand-50 text-slate-600 hover:text-brand-700 rounded-xl transition-all font-medium text-xs sm:text-sm border border-slate-100 hover:border-brand-200">
                                             <span id="country-toggle-text">Show All Countries</span>
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -838,7 +924,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="h-80 w-full relative">
+                                <div class="h-72 sm:h-80 w-full relative mobile-chart-height">
                                     <canvas id="chart-country"></canvas>
                                 </div>
                             </div>
@@ -846,7 +932,7 @@
                             <!-- Data Table -->
                             <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                                 <div
-                                    class="px-6 py-5 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
+                                    class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
                                     <div>
                                         <div class="flex items-center gap-3">
                                             <h2 class="text-xl font-bold text-slate-900">Store Location List</h2>
@@ -858,7 +944,7 @@
                                         <p class="text-xs text-slate-500 font-medium mt-0.5">Live store-format data based
                                             on applied filters</p>
                                     </div>
-                                    <div class="flex items-center gap-4">
+                                    <div class="flex flex-wrap items-center gap-3 sm:gap-4">
                                         <button id="select-all-trigger"
                                             class="text-xs font-bold text-brand-600 hover:text-brand-800 transition-colors uppercase tracking-wider">Select
                                             All</button>
@@ -891,7 +977,7 @@
 
                                 <!-- Selection Banner (Hidden by default) -->
                                 <div id="selection-banner"
-                                    class="bg-brand-50/50 border-y border-brand-100 px-6 py-2.5 flex items-center justify-between hidden">
+                                    class="bg-brand-50/50 border-y border-brand-100 px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hidden">
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white text-[10px] font-bold">
@@ -899,7 +985,7 @@
                                         <p id="selection-msg" class="text-xs font-semibold text-brand-700">All 15
                                             results on this page are selected.</p>
                                     </div>
-                                    <div class="flex items-center gap-4">
+                                    <div class="flex flex-wrap items-center gap-3 sm:gap-4">
                                         <button id="select-all-matching-btn"
                                             class="text-xs font-black text-brand-600 hover:text-brand-800 uppercase tracking-widest transition-colors">Select
                                             all <span id="total-matched-text">0</span> matched locations</button>
@@ -909,7 +995,7 @@
                                     </div>
                                 </div>
 
-                                <div class="overflow-x-auto">
+                                <div class="overflow-x-auto mobile-table-scroll">
                                     <table class="w-full text-left border-collapse">
                                         <thead>
                                             <tr
@@ -961,7 +1047,7 @@
 
         <!-- Footer -->
         <footer
-            class="mt-auto px-8 py-6 border-t border-slate-200 text-center text-slate-400 text-xs font-medium uppercase tracking-[0.3em]">
+            class="mt-auto px-4 sm:px-8 py-5 sm:py-6 border-t border-slate-200 text-center text-slate-400 text-[10px] sm:text-xs font-medium uppercase tracking-[0.18em] sm:tracking-[0.3em]">
             &copy; 2026 RetailOps Retail Operations
         </footer>
     </div>
@@ -970,10 +1056,10 @@
     <div id="chart-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10">
         <div id="modal-overlay" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
         <div
-            class="relative bg-white w-full max-w-6xl rounded-[40px] shadow-2xl overflow-hidden border border-slate-200 modal-enter">
-            <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            class="modal-panel relative bg-white w-full max-w-6xl rounded-[40px] shadow-2xl overflow-hidden border border-slate-200 modal-enter">
+            <div class="px-4 sm:px-8 py-4 sm:py-6 border-b border-slate-100 flex items-center justify-between gap-4 bg-slate-50/50">
                 <div>
-                    <h2 id="modal-chart-title" class="text-2xl font-bold text-slate-800 tracking-tight">Chart Preview
+                    <h2 id="modal-chart-title" class="text-lg sm:text-2xl font-bold text-slate-800 tracking-tight">Chart Preview
                     </h2>
                     <p class="text-[10px] font-medium text-slate-500 uppercase tracking-widest mt-1">Detailed Data
                         Analysis</p>
@@ -986,7 +1072,7 @@
                     </svg>
                 </button>
             </div>
-            <div class="p-10 h-[70vh] relative bg-white">
+            <div class="p-4 sm:p-10 h-[62vh] sm:h-[70vh] relative bg-white">
                 <canvas id="maximized-chart-canvas"></canvas>
             </div>
         </div>
