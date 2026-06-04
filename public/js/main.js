@@ -179,7 +179,7 @@ function updateStatusCards(statusData) {
             const colors = statusColors[label] || defaultColor;
 
             const card = document.createElement('div');
-            card.className = `${colors.bg} rounded-3xl border ${colors.border} p-4 flex flex-col justify-between shadow-lg premium-shadow h-28 relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`;
+            card.className = `${colors.bg} rounded-2xl sm:rounded-3xl border ${colors.border} p-3 sm:p-4 flex flex-col justify-between shadow-lg premium-shadow h-24 sm:h-28 relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`;
 
             card.innerHTML = `
                 <div class="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
@@ -188,7 +188,7 @@ function updateStatusCards(statusData) {
                     </svg>
                 </div>
                 <p class="text-[9px] font-bold ${colors.text} uppercase tracking-widest z-10 opacity-80">${label}</p>
-                <h3 class="text-3xl font-bold ${colors.text} leading-none z-10 font-display">${count}</h3>
+                <h3 class="text-2xl sm:text-3xl font-bold ${colors.text} leading-none z-10 font-display">${count}</h3>
                 <div class="w-6 h-1 bg-white/30 rounded-full z-10"></div>
             `;
 
@@ -532,6 +532,17 @@ function updateCountryFilterOptions(triggerRefresh = true) {
 // --- Event Handlers ---
 
 function bindEvents() {
+    const isMobileViewport = () => window.matchMedia('(max-width: 1023px)').matches;
+    const openMobileSidebar = () => {
+        if (!isMobileViewport()) return;
+        document.body.classList.add('mobile-sidebar-open');
+        document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', 'true');
+    };
+    const closeMobileSidebar = () => {
+        document.body.classList.remove('mobile-sidebar-open');
+        document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', 'false');
+    };
+
     // Auto-apply filters on change
     const filterInputs = [
         'filter-country', 'filter-region',
@@ -546,6 +557,7 @@ function bindEvents() {
                 syncFiltersFromUI();
                 state.page = 1;
                 refresh();
+                closeMobileSidebar();
             });
         }
     });
@@ -620,6 +632,7 @@ function bindEvents() {
         syncFiltersFromUI();
         state.page = 1;
         refresh();
+        closeMobileSidebar();
     });
 
     // Pagination
@@ -668,14 +681,23 @@ function bindEvents() {
         state.page = 1;
         // Full refresh including charts to reset all visualizations
         refresh(false);
+        closeMobileSidebar();
     });
 
     // Sidebar Minimize Logic
     const toggleSidebar = () => {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
-        const statsContainer = document.getElementById('stats-container');
         const floatingBtn = document.getElementById('sidebar-toggle');
+
+        if (isMobileViewport()) {
+            if (document.body.classList.contains('mobile-sidebar-open')) {
+                closeMobileSidebar();
+            } else {
+                openMobileSidebar();
+            }
+            return;
+        }
 
         state.isSidebarMinimized = !state.isSidebarMinimized;
 
@@ -694,6 +716,14 @@ function bindEvents() {
 
     document.getElementById('minimize-sidebar').addEventListener('click', toggleSidebar);
     document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+    document.getElementById('close-mobile-sidebar')?.addEventListener('click', closeMobileSidebar);
+    document.getElementById('mobile-sidebar-backdrop')?.addEventListener('click', closeMobileSidebar);
+    window.addEventListener('resize', () => {
+        if (!isMobileViewport()) closeMobileSidebar();
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeMobileSidebar();
+    });
 
     // Select All Checkbox (Current Page)
     // Select All Button Logic
@@ -748,14 +778,18 @@ function bindViewSwitcher() {
     const viewIntelligence = document.getElementById('intelligence-view');
     const sidebar = document.getElementById('sidebar');
     const homeBrand = document.getElementById('home-brand');
+    const closeMobileSidebar = () => {
+        document.body.classList.remove('mobile-sidebar-open');
+        document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', 'false');
+    };
 
     if (!btnPriority || !btnFulfillment || !btnIntelligence) return;
 
     const switchToPriority = (pushState = true) => {
         // Update Buttons
-        btnPriority.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
-        btnFulfillment.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
-        btnIntelligence.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
+        btnPriority.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
+        btnFulfillment.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
+        btnIntelligence.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
 
         // Update Views
         viewPriority.classList.remove('hidden');
@@ -772,6 +806,7 @@ function bindViewSwitcher() {
         }
 
         // Show Sidebar
+        closeMobileSidebar();
         sidebar.classList.remove('hidden');
         refresh(true); // Refresh main table
 
@@ -782,9 +817,9 @@ function bindViewSwitcher() {
 
     const switchToFulfillment = (pushState = true) => {
         // Update Buttons
-        btnFulfillment.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
-        btnPriority.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
-        btnIntelligence.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
+        btnFulfillment.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
+        btnPriority.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
+        btnIntelligence.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
 
         // Update Views
         viewPriority.classList.add('hidden');
@@ -801,6 +836,7 @@ function bindViewSwitcher() {
         }
 
         // Hide Sidebar
+        closeMobileSidebar();
         sidebar.classList.add('hidden');
 
         // Reset sub-views
@@ -817,9 +853,9 @@ function bindViewSwitcher() {
 
     const switchToIntelligence = (pushState = true) => {
         // Update Buttons
-        btnIntelligence.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
-        btnPriority.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
-        btnFulfillment.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
+        btnIntelligence.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
+        btnPriority.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
+        btnFulfillment.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
 
         // Update Views
         viewPriority.classList.add('hidden');
@@ -836,6 +872,7 @@ function bindViewSwitcher() {
         }
 
         // Hide Sidebar
+        closeMobileSidebar();
         sidebar.classList.add('hidden');
 
         // Load Data
