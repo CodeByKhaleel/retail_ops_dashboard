@@ -40,6 +40,7 @@ export const charts = {
 
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         const isBar = type === 'bar';
+        const isMobile = window.matchMedia('(max-width: 640px)').matches;
         const labelColor = isDark ? '#cbd5e1' : '#334155'; // Darker text for visibility
         const gridColor = isDark ? '#1e293b' : '#f1f5f9';
 
@@ -89,20 +90,20 @@ export const charts = {
                         position: 'bottom',
                         labels: {
                             usePointStyle: true,
-                            padding: 20,
+                            padding: isMobile ? 12 : 20,
                             color: labelColor,
                             font: {
-                                size: isMaximized ? 14 : 11,
+                                size: isMobile ? 10 : (isMaximized ? 14 : 11),
                                 family: "'Outfit', sans-serif",
                                 weight: '700'
                             }
                         }
                     },
                     tooltip: {
-                        padding: 12,
+                        padding: isMobile ? 10 : 12,
                         backgroundColor: isDark ? '#1e293b' : '#0f172a',
-                        titleFont: { family: "'Outfit', sans-serif", size: 13, weight: '700' },
-                        bodyFont: { family: "'Outfit', sans-serif", size: 12 }
+                        titleFont: { family: "'Outfit', sans-serif", size: isMobile ? 12 : 13, weight: '700' },
+                        bodyFont: { family: "'Outfit', sans-serif", size: isMobile ? 11 : 12 }
                     }
                 },
                 scales: isBar ? {
@@ -112,7 +113,7 @@ export const charts = {
                         ticks: {
                             color: labelColor,
                             font: {
-                                size: isMaximized ? 12 : 10,
+                                size: isMobile ? 9 : (isMaximized ? 12 : 10),
                                 family: "'Outfit', sans-serif",
                                 weight: '700'
                             }
@@ -123,15 +124,15 @@ export const charts = {
                         ticks: {
                             color: labelColor,
                             font: {
-                                size: isMaximized ? 12 : 9,
+                                size: isMobile ? 8 : (isMaximized ? 12 : 9),
                                 family: "'Outfit', sans-serif",
                                 weight: '700'
                             },
-                            maxRotation: isMaximized ? 90 : 45,
-                            minRotation: isMaximized ? 45 : 45,
+                            maxRotation: isMobile ? 35 : (isMaximized ? 90 : 45),
+                            minRotation: isMobile ? 0 : (isMaximized ? 45 : 45),
                             callback: function (val, index) {
                                 const label = this.getLabelForValue(val);
-                                const limit = isMaximized ? 25 : 15;
+                                const limit = isMobile ? 10 : (isMaximized ? 25 : 15);
                                 return label.length > limit ? label.substring(0, limit - 3) + '...' : label;
                             }
                         }
