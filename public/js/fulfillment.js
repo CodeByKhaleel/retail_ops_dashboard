@@ -55,7 +55,7 @@ export const fulfillment = {
             }
 
             container.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     ${data.map(u => this.getLocationCardHtml(u)).join('')}
                 </div>
             `;
@@ -79,36 +79,36 @@ export const fulfillment = {
     getLocationCardHtml(u) {
         const skuLabel = this.isFulfillmentOnly ? 'Total Fulfillment SKUs' : 'Total Standard SKUs';
         return `
-            <div data-id="${u.locationId}" class="fulfillment-univ-card relative overflow-hidden bg-white dark:bg-slate-950 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group">
-                <div class="flex flex-wrap justify-between items-start mb-6 gap-4">
+            <div data-id="${u.locationId}" class="fulfillment-univ-card relative overflow-hidden bg-white dark:bg-slate-950 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group">
+                <div class="flex flex-wrap justify-between items-start mb-4 sm:mb-6 gap-4">
                     <div>
-                        <h3 class="font-black text-slate-900 dark:text-slate-50 group-hover:text-brand-600 transition-colors text-xl">${u.locationName}</h3>
+                        <h3 class="font-black text-slate-900 dark:text-slate-50 group-hover:text-brand-600 transition-colors text-lg sm:text-xl">${u.locationName}</h3>
                     </div>
                 </div>
 
-                <div class="bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
-                    <div class="flex flex-wrap justify-between gap-6 mb-6">
+                <div class="bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                    <div class="flex flex-wrap justify-between gap-4 sm:gap-6 mb-5 sm:mb-6">
                         <div>
                             <p class="text-xs font-black text-slate-900 dark:text-white">Total Shortlisted SKUs</p>
-                            <p class="text-3xl font-black text-brand-600 dark:text-brand-400 mt-2">${(u.totalBrowsed ?? 0).toLocaleString()}</p>
+                            <p class="text-2xl sm:text-3xl font-black text-brand-600 dark:text-brand-400 mt-2">${(u.totalBrowsed ?? 0).toLocaleString()}</p>
                         </div>
-                        <div class="text-right">
+                        <div class="text-left sm:text-right">
                             <p class="text-xs font-black text-slate-900 dark:text-white">${skuLabel}</p>
-                            <p class="text-3xl font-black text-brand-600 dark:text-brand-400 mt-2">${(u.totalSKUs ?? 0).toLocaleString()}</p>
+                            <p class="text-2xl sm:text-3xl font-black text-brand-600 dark:text-brand-400 mt-2">${(u.totalSKUs ?? 0).toLocaleString()}</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         <div class="rounded-2xl border border-slate-200/70 bg-white/90 dark:bg-slate-900/60 dark:border-slate-800 p-4">
                             <p class="text-sm text-slate-900 dark:text-white font-black">New skus added</p>
-                            <div class="flex items-baseline gap-1.5 mt-1">
-                                <span class="text-2xl font-black text-brand-600 dark:text-brand-400">${(u.newSKUsCount ?? 0).toLocaleString()}</span>
+                            <div class="flex flex-wrap items-baseline gap-1.5 mt-1">
+                                <span class="text-xl sm:text-2xl font-black text-brand-600 dark:text-brand-400">${(u.newSKUsCount ?? 0).toLocaleString()}</span>
                                 <span class="text-xs text-slate-500 font-bold">&lt; 30 days</span>
                             </div>
                         </div>
                         <div class="rounded-2xl border border-slate-200/70 bg-white/90 dark:bg-slate-900/60 dark:border-slate-800 p-4">
                             <p class="text-sm text-slate-900 dark:text-white font-black">New intakes added</p>
-                            <div class="flex items-baseline gap-1.5 mt-1">
-                                <span class="text-2xl font-black text-brand-600 dark:text-brand-400">${(u.newIntakesCount ?? 0).toLocaleString()}</span>
+                            <div class="flex flex-wrap items-baseline gap-1.5 mt-1">
+                                <span class="text-xl sm:text-2xl font-black text-brand-600 dark:text-brand-400">${(u.newIntakesCount ?? 0).toLocaleString()}</span>
                                 <span class="text-xs text-slate-500 font-bold">&lt; 30 days</span>
                             </div>
                         </div>
@@ -158,13 +158,13 @@ export const fulfillment = {
                         Back to Location List
                     </button>
                     
-                    <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900/50 p-8 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900/50 p-4 sm:p-8 rounded-2xl sm:rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm">
                         <div>
-                            <h2 class="text-3xl font-black text-slate-900 dark:text-slate-100">${data.locationName}</h2>
+                            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">${data.locationName}</h2>
                             <p class="text-slate-500 dark:text-slate-400 font-medium">Performance Leaderboard for ${skuTypeLabel}</p>
                         </div>
-                        <div class="flex gap-4">
-                            <div class="bg-brand-50 dark:bg-brand-900/30 px-6 py-4 rounded-3xl border border-brand-100 dark:border-brand-800 flex flex-col items-center">
+                        <div class="flex flex-wrap gap-3 sm:gap-4">
+                            <div class="bg-brand-50 dark:bg-brand-900/30 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl sm:rounded-3xl border border-brand-100 dark:border-brand-800 flex flex-col items-center">
                                 <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-1">${skuTypeLabel}</span>
                                 <span class="text-2xl font-black text-brand-900 dark:text-slate-100">${data.stats.totalFulfillmentSKUs}</span>
                             </div>
@@ -174,7 +174,7 @@ export const fulfillment = {
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
                         
                         <!-- Top Shortlisted -->
-                        <div class="bg-white dark:bg-slate-900/50 rounded-[40px] border border-slate-200 dark:border-white/5 p-6 shadow-md">
+                        <div class="bg-white dark:bg-slate-900/50 rounded-2xl sm:rounded-[40px] border border-slate-200 dark:border-white/5 p-4 sm:p-6 shadow-md">
                             <div class="flex flex-wrap items-center justify-between mb-6 gap-2">
                                 <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                                     🔥 Top Shortlisted
@@ -200,7 +200,7 @@ export const fulfillment = {
                         </div>
 
                         <!-- Top Sold -->
-                        <div class="bg-white dark:bg-slate-900/50 rounded-[40px] border border-slate-200 dark:border-white/5 p-6 shadow-md">
+                        <div class="bg-white dark:bg-slate-900/50 rounded-2xl sm:rounded-[40px] border border-slate-200 dark:border-white/5 p-4 sm:p-6 shadow-md">
                             <div class="flex flex-wrap items-center justify-between mb-6 gap-2">
                                 <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                                     💰 Top Sold
@@ -272,8 +272,8 @@ export const fulfillment = {
         let label = metricKey === 'soldCount' ? 'Enrolled' : 'Shortlists';
 
         return `
-            <div class="flex items-center group p-4 rounded-3xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
-                <div class="w-12 h-12 flex items-center justify-center text-xl font-black text-slate-300 dark:text-slate-600 group-hover:text-brand-600 transition-colors">
+            <div class="flex items-center group p-3 sm:p-4 rounded-2xl sm:rounded-3xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-lg sm:text-xl font-black text-slate-300 dark:text-slate-600 group-hover:text-brand-600 transition-colors">
                     ${medal}
                 </div>
                 <div class="flex-1 ml-4">
