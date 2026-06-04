@@ -144,29 +144,29 @@ export const intelligence = {
 
             container.innerHTML = `
                 <div class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
                         <div class="space-y-4">
                             <div>
-                                <div class="flex items-center gap-3 mb-1">
-                                    <h2 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Intelligence Hub</h2>
+                                <div class="flex flex-wrap items-center gap-3 mb-1">
+                                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">Intelligence Hub</h2>
                                     <span class="px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 text-[10px] font-black uppercase tracking-wider">${this.currentYear} Insights</span>
                                 </div>
                                 <p class="text-slate-500 dark:text-slate-400 font-medium">Strategic demand tracking and market growth analytics</p>
                             </div>
 
                             <!-- Tab Switcher -->
-                            <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-white/5">
-                                <button data-intel-tab="location" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${this.activeTab === 'location' ? activeTabClass : inactiveTabClass}">
+                            <div class="inline-flex max-w-full overflow-x-auto no-scrollbar p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-white/5">
+                                <button data-intel-tab="location" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${this.activeTab === 'location' ? activeTabClass : inactiveTabClass}">
                                     Store Location Intelligence
                                 </button>
-                                <button data-intel-tab="sku" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${this.activeTab === 'sku' ? activeTabClass : inactiveTabClass}">
+                                <button data-intel-tab="sku" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${this.activeTab === 'sku' ? activeTabClass : inactiveTabClass}">
                                     SKU Intelligence
                                 </button>
                             </div>
                         </div>
 
                         <!-- Detailed Filters -->
-                        <div id="intel-filters-container" class="flex flex-wrap items-center gap-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 shadow-2xl rounded-none overflow-hidden">
+                        <div id="intel-filters-container" class="flex w-full flex-wrap items-stretch gap-0 overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 shadow-xl lg:w-auto lg:rounded-none lg:shadow-2xl">
                             <!-- Filters will be injected here by renderFilterDropdowns -->
                         </div>
                     </div>
@@ -241,7 +241,7 @@ export const intelligence = {
 
         container.innerHTML = `
             <!-- Year Toggle -->
-            <div class="flex items-center gap-1 p-2 bg-slate-50 dark:bg-slate-800/50 border-r border-slate-100 dark:border-white/5">
+            <div class="flex flex-1 items-center gap-1 p-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-white/5 sm:flex-none sm:border-b-0 sm:border-r">
                 ${years.map(y => `
                     <button data-intel-year="${y}" class="px-3 py-2 text-[11px] font-black rounded-none transition-all ${y === this.currentYear ? activeToggleClass : inactiveToggleClass}">
                         ${y}
@@ -250,7 +250,7 @@ export const intelligence = {
             </div>
 
             <!-- Timeframe Chips -->
-            <div class="flex items-center gap-2 px-4 border-r border-slate-100 dark:border-white/5">
+            <div class="flex flex-1 items-center gap-2 overflow-x-auto no-scrollbar px-3 sm:px-4 py-2 sm:py-0 border-b border-slate-100 dark:border-white/5 sm:flex-none sm:border-b-0 sm:border-r">
                 ${timeframes.map(tfItem => `
                     <button data-intel-timeframe="${tfItem}" class="px-3 py-1.5 text-[9px] font-black rounded-none border transition-all uppercase tracking-widest ${tfItem === tf ? activeChipClass : inactiveChipClass}">
                         ${tfItem}
@@ -259,7 +259,7 @@ export const intelligence = {
             </div>
 
             <!-- Period Dropdown -->
-            <div class="relative flex-grow min-w-[220px] rounded-none">
+            <div class="relative min-w-full flex-grow rounded-none sm:min-w-[220px]">
                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest absolute top-2 left-4 pointer-events-none">${periodLabel}</span>
                 <select id="period-selector" class="bg-transparent border-none text-[13px] font-black text-slate-900 dark:text-white focus:ring-0 cursor-pointer w-full py-5 pl-4 pr-10 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors uppercase tracking-tight rounded-none">
                     <option value="all" ${!selectedPeriod ? 'selected' : ''}>Latest Highlights</option>
@@ -380,9 +380,9 @@ export const intelligence = {
                 ${this.getSignalsHtml(signals)}
 
                 <div class="grid grid-cols-1 gap-6">
-                    <div class="bg-white dark:bg-slate-900/50 rounded-[40px] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
+                    <div class="bg-white dark:bg-slate-900/50 rounded-2xl sm:rounded-[40px] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto mobile-table-scroll">
+                            <table class="w-full min-w-[880px] text-left border-collapse">
                                 <thead>
                                     <tr class="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                                         <th class="px-6 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Rank</th>
@@ -419,9 +419,9 @@ export const intelligence = {
                 ${this.getSKUSignalsHtml(signals)}
 
                 <div class="grid grid-cols-1 gap-6">
-                    <div class="bg-white dark:bg-slate-900/50 rounded-[40px] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
+                    <div class="bg-white dark:bg-slate-900/50 rounded-2xl sm:rounded-[40px] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto mobile-table-scroll">
+                            <table class="w-full min-w-[900px] text-left border-collapse">
                                 <thead>
                                     <tr class="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                                         <th class="px-6 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Rank</th>
@@ -469,9 +469,9 @@ export const intelligence = {
 
     getSKUSignalsHtml(signals) {
         return `
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                 ${signals.marketLeader ? `
-                    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-950/40 dark:to-indigo-900/20 rounded-3xl p-5 border border-indigo-200 dark:border-indigo-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-indigo-500/10 group/card">
+                    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-950/40 dark:to-indigo-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-indigo-200 dark:border-indigo-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-indigo-500/10 group/card">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-[11px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Market Leader SKU</span>
@@ -480,14 +480,14 @@ export const intelligence = {
                         </div>
                         <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate mb-1 uppercase">${signals.marketLeader.sku}</h4>
                         <div class="flex items-baseline gap-2">
-                            <p class="text-3xl font-black text-indigo-600 dark:text-indigo-400">${this.getMarketSharePercent(signals.marketLeader).toFixed(1)}%</p>
+                            <p class="text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400">${this.getMarketSharePercent(signals.marketLeader).toFixed(1)}%</p>
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Share</span>
                         </div>
                     </div>
                 ` : ''}
 
                 ${signals.fastestGrowing ? `
-                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 rounded-3xl p-5 border border-emerald-200 dark:border-emerald-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-emerald-500/10 group/card">
+                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-emerald-200 dark:border-emerald-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-emerald-500/10 group/card">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Fastest Growing SKU</span>
@@ -495,12 +495,12 @@ export const intelligence = {
                             <svg class="w-5 h-5 text-emerald-500 transition-transform duration-500 group-hover/card:scale-110 group-hover/card:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                         </div>
                         <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate mb-1 uppercase">${signals.fastestGrowing.sku}</h4>
-                        <p class="text-3xl font-black text-emerald-600 dark:text-emerald-400">+${this.getGrowthPercent(signals.fastestGrowing)}%</p>
+                        <p class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">+${this.getGrowthPercent(signals.fastestGrowing)}%</p>
                     </div>
                 ` : ''}
 
                 ${signals.largestDrop && this.getGrowthPercent(signals.largestDrop) < 0 ? `
-                    <div class="bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/40 dark:to-red-900/20 rounded-3xl p-5 border border-red-200 dark:border-red-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-red-500/10 group/card">
+                    <div class="bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/40 dark:to-red-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-red-200 dark:border-red-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-red-500/10 group/card">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-[11px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest">Largest Drop SKU</span>
@@ -508,7 +508,7 @@ export const intelligence = {
                             <svg class="w-5 h-5 text-red-500 transition-transform duration-500 group-hover/card:scale-110 group-hover/card:-rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"></path></svg>
                         </div>
                         <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate mb-1 uppercase">${signals.largestDrop.sku}</h4>
-                        <p class="text-3xl font-black text-red-600 dark:text-red-400">${this.getGrowthPercent(signals.largestDrop)}%</p>
+                        <p class="text-2xl sm:text-3xl font-black text-red-600 dark:text-red-400">${this.getGrowthPercent(signals.largestDrop)}%</p>
                     </div>
                 ` : ''}
             </div>
@@ -599,9 +599,9 @@ export const intelligence = {
 
     getSignalsHtml(signals) {
         return `
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 ${signals.fastestGrowing ? `
-                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 rounded-3xl p-5 border border-emerald-200 dark:border-emerald-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-emerald-500/10 group/card">
+                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-emerald-200 dark:border-emerald-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-emerald-500/10 group/card">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Fastest Growing</span>
@@ -609,12 +609,12 @@ export const intelligence = {
                             <svg class="w-5 h-5 text-emerald-500 transition-transform duration-500 group-hover/card:scale-110 group-hover/card:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                         </div>
                         <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate mb-1 uppercase tracking-tight">${signals.fastestGrowing.location}</h4>
-                        <p class="text-3xl font-black text-emerald-600 dark:text-emerald-400">+${this.getGrowthPercent(signals.fastestGrowing)}%</p>
+                        <p class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">+${this.getGrowthPercent(signals.fastestGrowing)}%</p>
                     </div>
                 ` : ''}
                 
                 ${signals.largestDrop && this.getGrowthPercent(signals.largestDrop) < 0 ? `
-                    <div class="bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/40 dark:to-red-900/20 rounded-3xl p-5 border border-red-200 dark:border-red-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-red-500/10 group/card">
+                    <div class="bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/40 dark:to-red-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-red-200 dark:border-red-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-red-500/10 group/card">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-[11px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest">Largest Drop</span>
@@ -622,12 +622,12 @@ export const intelligence = {
                             <svg class="w-5 h-5 text-red-500 transition-transform duration-500 group-hover/card:scale-110 group-hover/card:-rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"></path></svg>
                         </div>
                         <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate mb-1 uppercase tracking-tight">${signals.largestDrop.location}</h4>
-                        <p class="text-3xl font-black text-red-600 dark:text-red-400">${this.getGrowthPercent(signals.largestDrop)}%</p>
+                        <p class="text-2xl sm:text-3xl font-black text-red-600 dark:text-red-400">${this.getGrowthPercent(signals.largestDrop)}%</p>
                     </div>
                 ` : ''}
                 
                 ${signals.marketLeader ? `
-                    <div class="bg-gradient-to-br from-brand-50 to-indigo-100/50 dark:from-brand-950/40 dark:to-indigo-900/20 rounded-3xl p-5 border border-brand-200 dark:border-indigo-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-brand-500/10 group/card">
+                    <div class="bg-gradient-to-br from-brand-50 to-indigo-100/50 dark:from-brand-950/40 dark:to-indigo-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-brand-200 dark:border-indigo-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-brand-500/10 group/card">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-[11px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest">Market Leader</span>
@@ -635,12 +635,12 @@ export const intelligence = {
                             <svg class="w-5 h-5 text-brand-500 transition-transform duration-500 group-hover/card:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate mb-1 uppercase tracking-tight">${signals.marketLeader.location}</h4>
-                        <p class="text-3xl font-black text-brand-600 dark:text-brand-400">${this.getMarketSharePercent(signals.marketLeader).toFixed(1)}%</p>
+                        <p class="text-2xl sm:text-3xl font-black text-brand-600 dark:text-brand-400">${this.getMarketSharePercent(signals.marketLeader).toFixed(1)}%</p>
                     </div>
                 ` : ''}
                 
                 ${signals.newEntrant ? `
-                    <div class="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/20 rounded-3xl p-5 border border-amber-200 dark:border-amber-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-amber-500/10 group/card">
+                    <div class="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-amber-200 dark:border-amber-500/20 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-amber-500/10 group/card">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-[11px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">New Entrant</span>
@@ -749,7 +749,7 @@ export const intelligence = {
                         <div class="h-28 bg-slate-50 dark:bg-slate-900 rounded-[32px] skeleton border border-slate-100 dark:border-white/5"></div>
                     `).join('')}
                 </div>
-                <div class="bg-white dark:bg-slate-900/50 rounded-[40px] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
+                <div class="bg-white dark:bg-slate-900/50 rounded-2xl sm:rounded-[40px] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
                     <div class="h-[300px] w-full skeleton"></div>
                 </div>
             </div>
