@@ -29,52 +29,52 @@ export const ui = {
                 try {
                     return `
                         <tr class="group border-b border-slate-100 table-row-hover">
-                            <td class="px-4 py-5">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5">
                                 <input type="checkbox" class="location-checkbox w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 transition-all cursor-pointer">
                             </td>
-                            <td class="px-4 py-5">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5">
                                 <div class="flex items-center gap-3">
                                     ${ui.getAvatarHtml(location.name)}
                                     <div class="font-semibold text-slate-900 text-sm">${location.name}</div>
                                 </div>
                             </td>
-                            <td class="px-4 py-5 text-slate-600 text-sm">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5 text-slate-600 text-sm">
                                 <div class="flex items-center gap-2">
                                     <span>${ui.getCountryFlag(location.country)}</span>
                                     <span>${location.country}</span>
                                 </div>
                             </td>
-                            <td class="px-4 py-5">
-                                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${ui.getStatusColor(location.status)}">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5">
+                                <span class="inline-flex items-center rounded-full px-2.5 sm:px-3 py-1 text-xs sm:text-sm font-semibold ${ui.getStatusColor(location.status)}">
                                     ${location.status}
                                 </span>
                             </td>
-                            <td class="px-4 py-5">
-                                <span class="inline-flex items-center rounded-md px-3 py-1 text-sm font-medium ${ui.getListingStatusColor(location.listingStatus)}">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5">
+                                <span class="inline-flex items-center rounded-md px-2.5 sm:px-3 py-1 text-xs sm:text-sm font-medium ${ui.getListingStatusColor(location.listingStatus)}">
                                     ${location.listingStatus}
                                 </span>
                             </td>
-                            <td class="px-4 py-5">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5">
                                 <span class="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${ui.getDataSourceColor(location.dataSource, true).replace('shadow-md', '').replace('ring-2', '')}">
                                     ${location.dataSource}
                                 </span>
                             </td>
-                            <td class="px-4 py-5">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5">
                                 <div class="flex flex-wrap gap-1.5">
                                     ${(location.storeFormats || []).map(t => `<span class="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${ui.getStoreFormatColor(t, true).replace('shadow-md', '').replace('ring-2', '').replace('!text-white', 'text-white')}">${t}</span>`).join('')}
                                 </div>
                             </td>
-                            <td class="px-4 py-5">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5">
                                 <div class="flex flex-wrap gap-1.5">
                                     ${(location.tags || []).map(t => `<span class="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${ui.getTagColor(t, true).replace('shadow-md', '').replace('ring-2', '').replace('!text-white', 'text-white')}">${t}</span>`).join('')}
                                 </div>
                             </td>
-                            <td class="px-4 py-5 text-center">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5 text-center">
                                 <span class="inline-flex items-center text-sm font-black text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg">
                                     ${location.performanceScore || 0}
                                 </span>
                             </td>
-                            <td class="px-4 py-5 text-center">
+                            <td class="px-3 sm:px-4 py-4 sm:py-5 text-center">
                                 ${location.priorityFulfillment ?
                             '<span class="text-emerald-500 text-2xl drop-shadow-sm font-bold">✓</span>' :
                             '<span class="text-slate-300 text-sm">--</span>'}
