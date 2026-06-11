@@ -72,6 +72,7 @@ const parsePositiveInt = (
 
 export const parseRetailFilters = (query: ParsedQs): RetailFilters => {
     return {
+        search: parseString(query.search),
         country: parseStringArray(query.country),
         status: parseStringArray(query.status),
         listingStatus: parseStringArray(query.listingStatus),
