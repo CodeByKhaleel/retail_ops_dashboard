@@ -1,4 +1,5 @@
 export interface RetailFilters {
+    search?: string;
     country?: string[];
     status?: string[];
     listingStatus?: string[];
