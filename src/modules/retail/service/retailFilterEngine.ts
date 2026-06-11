@@ -38,6 +38,37 @@ const unionSets = (sets: Set<string>[]): Set<string> => {
     return result;
 };
 
+const applySearch = (
+    store: InMemoryRetailLocationStore,
+    search: string
+): Set<string> => {
+    const normalizedSearch = search.trim().toLowerCase();
+    if (normalizedSearch.length === 0) {
+        return store.getAllIds();
+    }
+
+    const matches = new Set<string>();
+    for (const location of store.locationsById.values()) {
+        const haystacks = [
+            location.name,
+            location.country,
+            location.refId,
+            location.managedByTeam,
+            location.region,
+            location.dataSource,
+            ...location.tags,
+            ...location.fulfillmentPartners,
+            ...location.storeFormats,
+        ];
+
+        if (haystacks.some((value) => value.toLowerCase().includes(normalizedSearch))) {
+            matches.add(location.id);
+        }
+    }
+
+    return matches;
+};
+
 const normalizeArray = (values: string[]): string[] => {
     return values.map((value) => value.trim().toLowerCase()).filter((value) => value.length > 0);
 };
@@ -84,6 +115,14 @@ export const filterRetailLocationIds = (
     filters: RetailFilters
 ): Set<string> => {
     const activeSets: Set<string>[] = [];
+
+    if (filters.search) {
+        const searchMatches = applySearch(store, filters.search);
+        if (searchMatches.size === 0) {
+            return new Set<string>();
+        }
+        activeSets.push(searchMatches);
+    }
 
     if (filters.priorityFulfillment === true) {
         if (!addSingleFilter(store.priorityFulfillmentIndex, true, activeSets)) {
