@@ -18,6 +18,7 @@ const state = {
     sortBy: 'performanceScore',
     sortOrder: 'desc',
     filters: {
+        search: '',
         country: [],
         status: [],
         listingStatus: [],
@@ -27,8 +28,9 @@ const state = {
         fulfillmentPartners: [],
         priorityFulfillment: false,
         region: [],
+        managedByTeam: [],
     },
-    allMetaItems: [],
+    filterMetadata: null,
     totalPages: 1,
     hasNext: false,
     showAllCountries: false,
@@ -38,6 +40,95 @@ const state = {
     totalItems: 0,
     globalTotal: null
 };
+
+const DEFAULT_FILTERS = {
+    search: '',
+    country: [],
+    status: [],
+    listingStatus: [],
+    dataSource: [],
+    storeFormats: [],
+    tags: [],
+    fulfillmentPartners: [],
+    priorityFulfillment: false,
+    region: [],
+    managedByTeam: [],
+};
+
+let searchDebounceTimer;
+
+function areFiltersActive() {
+    return Object.values(state.filters).some((value) => value !== '' && value !== false && (!Array.isArray(value) || value.length > 0));
+}
+
+function syncStateToUrl(replace = false) {
+    const params = new URLSearchParams();
+    params.set('page', String(state.page));
+    params.set('pageSize', String(state.pageSize));
+    params.set('sortBy', state.sortBy);
+    params.set('sortOrder', state.sortOrder);
+
+    Object.entries(state.filters).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            if (value.length > 0) {
+                params.set(key, value.join(','));
+            }
+            return;
+        }
+
+        if (typeof value === 'boolean') {
+            if (value) {
+                params.set(key, 'true');
+            }
+            return;
+        }
+
+        if (value) {
+            params.set(key, value);
+        }
+    });
+
+    const queryString = params.toString();
+    const path = window.location.pathname === '/' ? '/priority' : window.location.pathname;
+    const target = queryString ? `${path}?${queryString}` : path;
+    const method = replace ? 'replaceState' : 'pushState';
+    window.history[method]({ page: 'priority' }, '', target);
+}
+
+function syncStateFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const parseList = (key) => {
+        const value = params.get(key);
+        return value ? value.split(',').map((item) => item.trim()).filter(Boolean) : [];
+    };
+
+    state.page = Math.max(1, Number(params.get('page')) || 1);
+    state.pageSize = Math.max(1, Number(params.get('pageSize')) || 15);
+    state.sortBy = params.get('sortBy') || 'performanceScore';
+    state.sortOrder = params.get('sortOrder') === 'asc' ? 'asc' : 'desc';
+
+    state.filters = {
+        ...DEFAULT_FILTERS,
+        search: params.get('search') || '',
+        country: parseList('country'),
+        status: parseList('status'),
+        listingStatus: parseList('listingStatus'),
+        dataSource: parseList('dataSource'),
+        storeFormats: parseList('storeFormats'),
+        tags: parseList('tags'),
+        fulfillmentPartners: parseList('fulfillmentPartners'),
+        priorityFulfillment: params.get('priorityFulfillment') === 'true',
+        region: parseList('region'),
+        managedByTeam: parseList('managedByTeam'),
+    };
+}
+
+function syncSearchInputFromState() {
+    const searchInput = document.getElementById('location-search');
+    if (searchInput) {
+        searchInput.value = state.filters.search || '';
+    }
+}
 
 // --- Initialization ---
 
@@ -66,6 +157,7 @@ async function init() {
 
     try {
         console.log('[MAIN] Authenticated as:', user.email);
+        syncStateFromUrl();
 
         document.getElementById('user-name').textContent = user.name || user.email;
         document.getElementById('user-email').textContent = user.email;
@@ -79,6 +171,7 @@ async function init() {
 
         console.log('[MAIN] Loading dashboard data...');
         await loadFilters();
+        syncSearchInputFromState();
         setupTheme();
         await loadStaticStatusCards(); // Load static status cards first
         await refresh();
@@ -220,6 +313,7 @@ async function loadStaticStatusCards() {
 
 async function refresh(skipCharts = false) {
     ui.showError('error-banner', '');
+    syncStateToUrl(true);
     try {
         const query = api.buildQuery({
             ...state.filters,
@@ -248,7 +342,7 @@ async function refresh(skipCharts = false) {
             }
 
             // Update Stats UI
-            const isFiltered = Object.values(state.filters).some(v => v !== '' && v !== false && (!Array.isArray(v) || v.length > 0));
+            const isFiltered = areFiltersActive();
             const filteredCard = document.getElementById('filtered-stats-card');
             const filteredCount = document.getElementById('filtered-locations-count');
 
@@ -268,6 +362,7 @@ async function refresh(skipCharts = false) {
 
             state.totalPages = locations.totalPages;
             state.hasNext = locations.hasNext;
+            ui.renderActiveFilters('active-filter-summary', state.filters, removeFilterValue, clearAllFilters);
             updatePaginationUI();
 
             resetSelection();
@@ -296,7 +391,7 @@ async function refresh(skipCharts = false) {
         }
 
         // Update Stats UI
-        const isFiltered = Object.values(state.filters).some(v => v !== '' && v !== false && (!Array.isArray(v) || v.length > 0));
+        const isFiltered = areFiltersActive();
         const filteredCard = document.getElementById('filtered-stats-card');
         const filteredCount = document.getElementById('filtered-locations-count');
 
@@ -319,6 +414,7 @@ async function refresh(skipCharts = false) {
 
         state.totalPages = locations.totalPages;
         state.hasNext = locations.hasNext;
+        ui.renderActiveFilters('active-filter-summary', state.filters, removeFilterValue, clearAllFilters);
         updatePaginationUI();
 
 
@@ -432,29 +528,17 @@ function handlePillSelect(value, btn, key, isMulti = false) {
 
 async function loadFilters() {
     try {
-        const meta = await api.get('/retail/locations?page=1&pageSize=3000');
+        const meta = await api.get('/retail/locations/metadata');
 
-        if (!meta || !meta.items) {
+        if (!meta) {
             console.warn('Failed to load filter metadata, using empty filters');
             return;
         }
 
-        const items = meta.items || [];
-        state.allMetaItems = items; // Cache for correlation
-
-        const collect = (fn, source = items) => {
-            const values = source.flatMap(i => {
-                const val = fn(i);
-                if (val === undefined || val === null) return [];
-                return val;
-            });
-            const unique = [...new Set(values)].filter(v => v !== '').sort();
-            return unique;
-        };
+        state.filterMetadata = meta;
 
         // 1. Populate Region Pills
-        const regionOpts = collect(i => i.region);
-        ui.populatePills('filter-region-container', regionOpts, state.filters.region, (val) => {
+        ui.populatePills('filter-region-container', meta.region || [], state.filters.region, (val) => {
             handlePillSelect(val, null, 'region', true);
             updateCountryFilterOptions(); // Correlation logic
         });
@@ -463,29 +547,24 @@ async function loadFilters() {
         updateCountryFilterOptions(false);
 
         // 3. Data Source (Multi)
-        let dataSourceOpts = collect(i => i.dataSource);
+        let dataSourceOpts = [...(meta.dataSource || [])];
         if (!dataSourceOpts.includes('All')) dataSourceOpts.unshift('All');
         ui.populatePills('filter-dataSource-container', dataSourceOpts, state.filters.dataSource, (val) => handlePillSelect(val, null, 'dataSource', true));
 
         // 4. Store Location Status (Multi)
-        const statusOpts = collect(i => i.status);
-        ui.populatePills('filter-status-container', statusOpts, state.filters.status, (val) => handlePillSelect(val, null, 'status', true));
+        ui.populatePills('filter-status-container', meta.status || [], state.filters.status, (val) => handlePillSelect(val, null, 'status', true));
 
         // 5. Listing Status (Multi)
-        const publishOpts = collect(i => i.listingStatus);
-        ui.populatePills('filter-listingStatus-container', publishOpts, state.filters.listingStatus, (val) => handlePillSelect(val, null, 'listingStatus', true));
+        ui.populatePills('filter-listingStatus-container', meta.listingStatus || [], state.filters.listingStatus, (val) => handlePillSelect(val, null, 'listingStatus', true));
 
         // 6. Tags (Multi)
-        const tagsOpts = collect(i => i.tags);
-        ui.populatePills('filter-tags-container', tagsOpts, state.filters.tags, (val) => handlePillSelect(val, null, 'tags', true));
+        ui.populatePills('filter-tags-container', meta.tags || [], state.filters.tags, (val) => handlePillSelect(val, null, 'tags', true));
 
         // 7. Fulfillment Partners (Multi)
-        const locationOpts = collect(i => i.fulfillmentPartners);
-        ui.populatePills('filter-fulfillmentPartners-container', locationOpts, state.filters.fulfillmentPartners, (val) => handlePillSelect(val, null, 'fulfillmentPartners', true));
+        ui.populatePills('filter-fulfillmentPartners-container', meta.fulfillmentPartners || [], state.filters.fulfillmentPartners, (val) => handlePillSelect(val, null, 'fulfillmentPartners', true));
 
         // 8. Store Formats (Fixed Multi)
-        const storeFormats = collect(i => i.storeFormats);
-        ui.populatePills('filter-storeFormats-container', storeFormats, state.filters.storeFormats, (val) => handlePillSelect(val, null, 'storeFormats', true));
+        ui.populatePills('filter-storeFormats-container', meta.storeFormats || [], state.filters.storeFormats, (val) => handlePillSelect(val, null, 'storeFormats', true));
 
     } catch (error) {
         console.error('Filter loading failed:', error);
@@ -497,25 +576,13 @@ async function loadFilters() {
  * Handle correlation between Region and Country filters.
  */
 function updateCountryFilterOptions(triggerRefresh = true) {
-    const items = state.allMetaItems || [];
     const selectedRegions = state.filters.region;
+    const metadata = state.filterMetadata || {};
+    const regionCountries = metadata.regionCountries || {};
 
-    let filteredItems = items;
-    if (selectedRegions.length > 0) {
-        filteredItems = items.filter(i => selectedRegions.includes(i.region));
-    }
-
-    const collect = (fn, source = filteredItems) => {
-        const values = source.flatMap(i => {
-            const val = fn(i);
-            if (val === undefined || val === null) return [];
-            return val;
-        });
-        const unique = [...new Set(values)].filter(v => v !== '').sort();
-        return unique;
-    };
-
-    const countryOpts = collect(i => i.country);
+    const countryOpts = selectedRegions.length > 0
+        ? [...new Set(selectedRegions.flatMap((region) => regionCountries[region] || []))].sort((a, b) => a.localeCompare(b))
+        : [...(metadata.country || [])];
 
     // If existing selected countries are no longer available in the new region list, remove them
     state.filters.country = state.filters.country.filter(c => countryOpts.includes(c));
@@ -542,6 +609,7 @@ function bindEvents() {
         document.body.classList.remove('mobile-sidebar-open');
         document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', 'false');
     };
+    const currentSearch = () => window.location.search || '';
 
     // Auto-apply filters on change
     const filterInputs = [
@@ -623,15 +691,29 @@ function bindEvents() {
     bindSearch('fulfillment-search', 'filter-fulfillmentPartners-container');
     bindSearch('country-search', 'filter-country-container');
 
+    document.getElementById('location-search')?.addEventListener('input', (event) => {
+        const searchValue = event.target.value.trim();
+        window.clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = window.setTimeout(() => {
+            state.filters.search = searchValue;
+            state.page = 1;
+            refresh(true);
+        }, 250);
+    });
+
+    document.getElementById('clear-location-search')?.addEventListener('click', () => {
+        state.filters.search = '';
+        syncSearchInputFromState();
+        state.page = 1;
+        refresh(true);
+    });
+
     // Chart Maximization Events
     bindChartEvents();
 
 
     document.getElementById('clear-filters').addEventListener('click', () => {
-        clearFiltersUI();
-        syncFiltersFromUI();
-        state.page = 1;
-        refresh();
+        clearAllFilters();
         closeMobileSidebar();
     });
 
@@ -676,11 +758,7 @@ function bindEvents() {
 
     // Reset All Filters
     document.getElementById('reset-all-filters')?.addEventListener('click', () => {
-        clearFiltersUI();
-        syncFiltersFromUI();
-        state.page = 1;
-        // Full refresh including charts to reset all visualizations
-        refresh(false);
+        clearAllFilters();
         closeMobileSidebar();
     });
 
@@ -811,7 +889,7 @@ function bindViewSwitcher() {
         refresh(true); // Refresh main table
 
         if (pushState) {
-            history.pushState({ page: 'priority' }, '', '/priority');
+            history.pushState({ page: 'priority' }, '', `/priority${currentSearch()}`);
         }
     };
 
@@ -847,7 +925,7 @@ function bindViewSwitcher() {
         fulfillment.renderSummary('fulfillment-locations-container');
 
         if (pushState) {
-            history.pushState({ page: 'fulfillment' }, '', '/fulfillment');
+            history.pushState({ page: 'fulfillment' }, '', `/fulfillment${currentSearch()}`);
         }
     };
 
@@ -879,7 +957,7 @@ function bindViewSwitcher() {
         intelligence.renderDashboard('intelligence-dashboard-container');
 
         if (pushState) {
-            history.pushState({ page: 'intelligence' }, '', '/intelligence');
+            history.pushState({ page: 'intelligence' }, '', `/intelligence${currentSearch()}`);
         }
     };
 
@@ -888,7 +966,7 @@ function bindViewSwitcher() {
     btnIntelligence.addEventListener('click', () => switchToIntelligence(true));
     homeBrand?.addEventListener('click', () => {
         switchToPriority(false);
-        history.pushState({ page: 'priority' }, '', '/');
+        history.pushState({ page: 'priority' }, '', `/${currentSearch()}`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
@@ -909,9 +987,11 @@ function bindViewSwitcher() {
         } else if (path.startsWith('/intelligence')) {
             switchToIntelligence(false);
         } else {
+            syncStateFromUrl();
+            syncSearchInputFromState();
             switchToPriority(false);
             if (path !== '/priority' && path !== '/') {
-                history.replaceState({ page: 'priority' }, '', '/priority');
+                history.replaceState({ page: 'priority' }, '', `/priority${currentSearch()}`);
             }
         }
     };
@@ -1025,24 +1105,49 @@ function bindBulkActions() {
     });
 }
 
+function removeFilterValue(key, value) {
+    if (Array.isArray(state.filters[key])) {
+        state.filters[key] = state.filters[key].filter((entry) => entry !== value);
+        if (key === 'region') {
+            updateCountryFilterOptions(false);
+        }
+        if (key === 'country') {
+            ui.updatePillState('filter-country-container', state.filters.country);
+        } else {
+            ui.updatePillState(`filter-${key}-container`, state.filters[key]);
+        }
+    } else if (typeof state.filters[key] === 'boolean') {
+        state.filters[key] = false;
+        if (key === 'priorityFulfillment') {
+            const checkbox = document.getElementById('filter-priorityFulfillment');
+            if (checkbox) checkbox.checked = false;
+        }
+    } else {
+        state.filters[key] = '';
+        if (key === 'search') {
+            syncSearchInputFromState();
+        }
+    }
+
+    state.page = 1;
+    refresh();
+}
+
+function clearAllFilters() {
+    clearFiltersUI();
+    syncFiltersFromUI();
+    state.page = 1;
+    refresh(false);
+}
+
 
 function clearFiltersUI() {
     const introducerFilter = document.getElementById('filter-priorityFulfillment');
     if (introducerFilter) introducerFilter.checked = false;
 
     // Reset state object to defaults
-    state.filters = {
-        country: [],
-        status: [],
-        listingStatus: [],
-        dataSource: [],
-        storeFormats: [],
-        tags: [],
-        fulfillmentPartners: [],
-        priorityFulfillment: false,
-        region: [],
-        managedByTeam: [],
-    };
+    state.filters = { ...DEFAULT_FILTERS, country: [], status: [], listingStatus: [], dataSource: [], storeFormats: [], tags: [], fulfillmentPartners: [], region: [], managedByTeam: [] };
+    syncSearchInputFromState();
 
     // Refresh UI for all pill containers
     ['country', 'region', 'status', 'listingStatus', 'dataSource', 'tags', 'fulfillmentPartners', 'storeFormats'].forEach(key => {
