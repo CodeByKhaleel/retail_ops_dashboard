@@ -7,6 +7,9 @@ const sortArray = (values: string[]): string[] => [...values].sort();
 const normalizeFilters = (filters: RetailFilters): Record<string, StableValue> => {
     const normalized: Record<string, StableValue> = {};
 
+    if (filters.search !== undefined) {
+        normalized.search = filters.search.trim().toLowerCase();
+    }
     if (filters.country !== undefined) {
         normalized.country = sortArray(filters.country);
     }
