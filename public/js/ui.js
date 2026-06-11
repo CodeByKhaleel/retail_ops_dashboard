@@ -346,6 +346,73 @@ export const ui = {
     `;
     },
 
+    renderActiveFilters(containerId, filters, onRemove, onClearAll) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const entries = [];
+        Object.entries(filters).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                value.forEach((item) => entries.push({ key, value: item, label: `${ui.getFilterLabel(key)}: ${item}` }));
+                return;
+            }
+
+            if (typeof value === 'boolean') {
+                if (value) {
+                    entries.push({ key, value: 'true', label: ui.getFilterLabel(key) });
+                }
+                return;
+            }
+
+            if (value) {
+                entries.push({ key, value, label: `${ui.getFilterLabel(key)}: ${value}` });
+            }
+        });
+
+        if (entries.length === 0) {
+            container.classList.add('hidden');
+            container.innerHTML = '';
+            return;
+        }
+
+        container.classList.remove('hidden');
+        container.innerHTML = `
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Active Filters</span>
+                ${entries.map((entry, index) => `
+                    <button data-filter-key="${entry.key}" data-filter-value="${entry.value}" class="active-filter-chip inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+                        <span>${entry.label}</span>
+                        <span class="text-brand-500">x</span>
+                    </button>
+                `).join('')}
+                <button id="clear-active-filters" class="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-brand-700">Clear All</button>
+            </div>
+        `;
+
+        container.querySelectorAll('.active-filter-chip').forEach((button) => {
+            button.addEventListener('click', () => onRemove(button.dataset.filterKey, button.dataset.filterValue));
+        });
+        container.querySelector('#clear-active-filters')?.addEventListener('click', onClearAll);
+    },
+
+    getFilterLabel(key) {
+        const labels = {
+            search: 'Search',
+            country: 'Country',
+            status: 'Status',
+            listingStatus: 'Listing',
+            dataSource: 'Source',
+            storeFormats: 'Format',
+            tags: 'Tag',
+            fulfillmentPartners: 'Partner',
+            priorityFulfillment: 'Priority Fulfillment',
+            region: 'Region',
+            managedByTeam: 'Team',
+        };
+
+        return labels[key] || key;
+    },
+
     /**
      * Export data to CSV or XLSX (Excel XML format)
      */
