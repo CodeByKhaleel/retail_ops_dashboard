@@ -3,6 +3,7 @@ import { authenticate } from '../../middleware/auth.middleware';
 import { getRetailLocations } from './controller/locations.controller';
 import { getCharts } from './controller/charts.controller';
 import { getFulfillmentSummary, getLocationDetails } from './controller/fulfillment.controller';
+import { getRetailFilterMetadata } from './controller/metadata.controller';
 import {
     getAvailableWeeks,
     getDemandCategories,
@@ -14,6 +15,7 @@ const router = Router();
 
 router.get('/locations', authenticate, getRetailLocations);
 router.get('/locations/charts', authenticate, getCharts);
+router.get('/locations/metadata', authenticate, getRetailFilterMetadata);
 
 router.get('/fulfillment/summary', authenticate, getFulfillmentSummary);
 router.get('/fulfillment/location/:locationId', authenticate, getLocationDetails);
