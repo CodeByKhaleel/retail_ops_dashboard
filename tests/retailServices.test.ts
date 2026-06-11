@@ -6,6 +6,9 @@ import { filterRetailLocationIds } from '../src/modules/retail/service/retailFil
 import { getRetailLocationsByIds } from '../src/modules/retail/service/retailQueryService';
 import { sortRetailLocations } from '../src/modules/retail/service/retailSortService';
 import { RetailDemandRepository } from '../src/modules/retail/repository/RetailDemandRepository';
+import { parseRetailFilters } from '../src/modules/retail/controller/retailQueryParser';
+import { getRetailFilterMetadata } from '../src/modules/retail/controller/metadata.controller';
+import { retailLocationStore } from '../src/modules/retail/service/InMemoryRetailLocationStore';
 
 const setupStore = async () => {
     const store = new InMemoryRetailLocationStore();
@@ -55,6 +58,49 @@ describe('retail services', () => {
             product: expect.any(String),
             category: expect.any(String),
             searchCount: expect.any(Number),
+        }));
+    });
+
+    it('parses search filters from the query string', () => {
+        const filters = parseRetailFilters({
+            search: '  Harbor  ',
+            country: 'Canada,Germany',
+            priorityFulfillment: 'true',
+        });
+
+        expect(filters).toEqual(expect.objectContaining({
+            search: 'Harbor',
+            country: ['Canada', 'Germany'],
+            priorityFulfillment: true,
+        }));
+    });
+
+    it('filters locations by free-text search across fields', async () => {
+        const store = await setupStore();
+        const ids = filterRetailLocationIds(store, { search: 'rapid ship' });
+        const items = getRetailLocationsByIds(store, Array.from(ids));
+
+        expect(items.length).toBeGreaterThan(0);
+        expect(items.every((item) => item.fulfillmentPartners.includes('Rapid Ship'))).toBe(true);
+    });
+
+    it('returns filter metadata including region-to-country mapping', async () => {
+        await setupStore();
+        retailLocationStore.clear();
+        await initializeRetailLocationStore(new DemoRetailLocationRepository(), retailLocationStore);
+
+        const json = jest.fn();
+        getRetailFilterMetadata({} as never, { json } as never, jest.fn());
+
+        expect(json).toHaveBeenCalledWith(expect.objectContaining({
+            success: true,
+            data: expect.objectContaining({
+                country: expect.arrayContaining(['Canada', 'India']),
+                regionCountries: expect.objectContaining({
+                    'North America': expect.arrayContaining(['Canada', 'Mexico', 'United States']),
+                    Asia: expect.arrayContaining(['India', 'Japan', 'Singapore']),
+                }),
+            }),
         }));
     });
 });
