@@ -738,6 +738,8 @@
                                             class="filter-tab-btn pb-3 text-xs font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-all">Status</button>
                                         <button data-tab="metadata"
                                             class="filter-tab-btn pb-3 text-xs font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-all">Metadata</button>
+                                        <button data-tab="admin"
+                                            class="filter-tab-btn pb-3 text-xs font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-all">Admin</button>
                                     </div>
                                 </div>
 
@@ -882,6 +884,50 @@
                                                         Priority Fulfillment</span>
                                                 </label>
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Saved Filter Administration Tab -->
+                                    <div id="tab-admin" class="filter-tab-content hidden space-y-5">
+                                        <div>
+                                            <h3
+                                                class="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                <span class="w-3 h-px bg-slate-900 dark:bg-slate-200"></span> Saved
+                                                Filter Admin
+                                            </h3>
+                                            <p class="text-xs leading-5 text-slate-500">
+                                                Configure filters in the other tabs, then save the current combination
+                                                as a reusable preset.
+                                            </p>
+                                        </div>
+
+                                        <form id="saved-filter-form"
+                                            class="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                            <label for="saved-filter-name"
+                                                class="block text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">
+                                                Preset Name
+                                            </label>
+                                            <input id="saved-filter-name" type="text" maxlength="60"
+                                                placeholder="e.g. At-risk US stores"
+                                                class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100">
+                                            <button type="submit"
+                                                class="w-full rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all hover:bg-brand-700 active:scale-[0.98]">
+                                                Save Current Filters
+                                            </button>
+                                            <p id="saved-filter-feedback" class="hidden text-xs font-medium"
+                                                role="status"></p>
+                                        </form>
+
+                                        <div>
+                                            <div class="mb-3 flex items-center justify-between">
+                                                <h4
+                                                    class="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">
+                                                    Available Presets
+                                                </h4>
+                                                <span id="saved-filter-count"
+                                                    class="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700">0</span>
+                                            </div>
+                                            <div id="saved-filter-list" class="space-y-3"></div>
                                         </div>
                                     </div>
                                 </div>
