@@ -55,7 +55,58 @@ const DEFAULT_FILTERS = {
     managedByTeam: [],
 };
 
+const SAVED_FILTERS_STORAGE_KEY = 'retailOps.savedFilters.v1';
+
 let searchDebounceTimer;
+
+function cloneFilters(filters = DEFAULT_FILTERS) {
+    return Object.fromEntries(
+        Object.entries(filters).map(([key, value]) => [key, Array.isArray(value) ? [...value] : value])
+    );
+}
+
+function normalizeSavedFilters(filters) {
+    const normalized = cloneFilters(DEFAULT_FILTERS);
+
+    Object.keys(normalized).forEach((key) => {
+        const value = filters?.[key];
+        if (Array.isArray(normalized[key])) {
+            normalized[key] = Array.isArray(value)
+                ? value.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
+                : [];
+        } else if (typeof normalized[key] === 'boolean') {
+            normalized[key] = value === true;
+        } else {
+            normalized[key] = typeof value === 'string' ? value.trim() : '';
+        }
+    });
+
+    return normalized;
+}
+
+function getSavedFilterPresets() {
+    try {
+        const stored = JSON.parse(localStorage.getItem(SAVED_FILTERS_STORAGE_KEY) || '[]');
+        if (!Array.isArray(stored)) return [];
+
+        return stored
+            .filter((preset) => preset && typeof preset.id === 'string' && typeof preset.name === 'string')
+            .map((preset) => ({
+                id: preset.id,
+                name: preset.name.trim().slice(0, 60),
+                filters: normalizeSavedFilters(preset.filters),
+                updatedAt: typeof preset.updatedAt === 'string' ? preset.updatedAt : new Date().toISOString(),
+            }))
+            .filter((preset) => preset.name);
+    } catch (error) {
+        console.warn('[MAIN] Saved filter presets could not be loaded:', error);
+        return [];
+    }
+}
+
+function persistSavedFilterPresets(presets) {
+    localStorage.setItem(SAVED_FILTERS_STORAGE_KEY, JSON.stringify(presets));
+}
 
 function areFiltersActive() {
     return Object.values(state.filters).some((value) => value !== '' && value !== false && (!Array.isArray(value) || value.length > 0));
@@ -130,6 +181,103 @@ function syncSearchInputFromState() {
     }
 }
 
+function syncFilterControlsFromState() {
+    syncSearchInputFromState();
+    const priorityCheckbox = document.getElementById('filter-priorityFulfillment');
+    if (priorityCheckbox) priorityCheckbox.checked = state.filters.priorityFulfillment;
+
+    updateCountryFilterOptions(false);
+    ['region', 'status', 'listingStatus', 'dataSource', 'tags', 'fulfillmentPartners', 'storeFormats'].forEach((key) => {
+        ui.updatePillState(`filter-${key}-container`, state.filters[key]);
+    });
+}
+
+function getFilterSummary(filters) {
+    const entries = [];
+
+    Object.entries(filters).forEach(([key, value]) => {
+        if (Array.isArray(value) && value.length > 0) {
+            entries.push(`${ui.getFilterLabel(key)}: ${value.join(', ')}`);
+        } else if (typeof value === 'boolean' && value) {
+            entries.push(ui.getFilterLabel(key));
+        } else if (typeof value === 'string' && value) {
+            entries.push(`${ui.getFilterLabel(key)}: ${value}`);
+        }
+    });
+
+    return entries;
+}
+
+function showSavedFilterFeedback(message, isError = false) {
+    const feedback = document.getElementById('saved-filter-feedback');
+    if (!feedback) return;
+
+    feedback.textContent = message;
+    feedback.classList.remove('hidden', 'text-red-600', 'text-emerald-600');
+    feedback.classList.add(isError ? 'text-red-600' : 'text-emerald-600');
+}
+
+function renderSavedFilterPresets() {
+    const list = document.getElementById('saved-filter-list');
+    const count = document.getElementById('saved-filter-count');
+    if (!list || !count) return;
+
+    const presets = getSavedFilterPresets();
+    count.textContent = String(presets.length);
+    list.innerHTML = '';
+
+    if (presets.length === 0) {
+        const emptyState = document.createElement('p');
+        emptyState.className = 'rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-center text-xs text-slate-400';
+        emptyState.textContent = 'No saved filter presets yet.';
+        list.appendChild(emptyState);
+        return;
+    }
+
+    presets.forEach((preset) => {
+        const card = document.createElement('article');
+        card.className = 'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm';
+
+        const header = document.createElement('div');
+        header.className = 'mb-2 flex items-start justify-between gap-3';
+
+        const name = document.createElement('h5');
+        name.className = 'text-sm font-bold text-slate-900';
+        name.textContent = preset.name;
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'shrink-0 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-red-500 hover:bg-red-50';
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', () => {
+            persistSavedFilterPresets(getSavedFilterPresets().filter((item) => item.id !== preset.id));
+            renderSavedFilterPresets();
+            showSavedFilterFeedback(`Deleted "${preset.name}".`);
+        });
+
+        header.append(name, deleteButton);
+
+        const summary = document.createElement('p');
+        summary.className = 'mb-3 text-xs leading-5 text-slate-500';
+        summary.textContent = getFilterSummary(preset.filters).join(' | ') || 'No filters';
+
+        const applyButton = document.createElement('button');
+        applyButton.type = 'button';
+        applyButton.className = 'w-full rounded-xl border border-brand-200 bg-brand-50 px-3 py-2 text-xs font-bold text-brand-700 transition-colors hover:bg-brand-100';
+        applyButton.textContent = 'Apply Preset';
+        applyButton.addEventListener('click', () => {
+            state.filters = normalizeSavedFilters(preset.filters);
+            state.page = 1;
+            syncFilterControlsFromState();
+            refresh();
+            showSavedFilterFeedback(`Applied "${preset.name}".`);
+        });
+
+        card.append(header, summary, applyButton);
+        list.appendChild(card);
+    });
+}
+
 // --- Initialization ---
 
 async function init() {
@@ -176,6 +324,7 @@ async function init() {
         await loadStaticStatusCards(); // Load static status cards first
         await refresh();
         bindEvents();
+        renderSavedFilterPresets();
         bindViewSwitcher();
         fulfillment.init();
         intelligence.init();
@@ -690,6 +839,40 @@ function bindEvents() {
 
     bindSearch('fulfillment-search', 'filter-fulfillmentPartners-container');
     bindSearch('country-search', 'filter-country-container');
+
+    document.getElementById('saved-filter-form')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const nameInput = document.getElementById('saved-filter-name');
+        const name = nameInput?.value.trim() || '';
+
+        if (!name) {
+            showSavedFilterFeedback('Enter a name for this preset.', true);
+            nameInput?.focus();
+            return;
+        }
+
+        if (!areFiltersActive()) {
+            showSavedFilterFeedback('Select at least one filter before saving.', true);
+            return;
+        }
+
+        const presets = getSavedFilterPresets();
+        const existing = presets.find((preset) => preset.name.toLowerCase() === name.toLowerCase());
+        const savedPreset = {
+            id: existing?.id || `filter-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            name,
+            filters: normalizeSavedFilters(state.filters),
+            updatedAt: new Date().toISOString(),
+        };
+        const nextPresets = existing
+            ? presets.map((preset) => preset.id === existing.id ? savedPreset : preset)
+            : [savedPreset, ...presets];
+
+        persistSavedFilterPresets(nextPresets);
+        nameInput.value = '';
+        renderSavedFilterPresets();
+        showSavedFilterFeedback(existing ? `Updated "${name}".` : `Saved "${name}".`);
+    });
 
     document.getElementById('location-search')?.addEventListener('input', (event) => {
         const searchValue = event.target.value.trim();
