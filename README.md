@@ -30,6 +30,7 @@ PulseOps is a self-contained retail operations dashboard designed to demonstrate
 
 * Retail operations analytics dashboard
 * Advanced filtering and sorting
+* Admin-managed saved filter presets with browser persistence
 * Pagination for large datasets
 * KPI and chart aggregation APIs
 * Fulfillment intelligence workflows
