@@ -8,7 +8,9 @@ import { ui } from './ui.js';
 import { charts } from './charts.js';
 import { fulfillment } from './fulfillment.js';
 import { intelligence } from './intelligence.js';
+import { admin } from './admin.js';
 import { getCachedUser } from './auth.js';
+import { canManageRoles, canViewTab, getFirstAllowedTab } from './permissions.js';
 
 window.charts = charts;
 
@@ -328,6 +330,7 @@ async function init() {
         bindViewSwitcher();
         fulfillment.init();
         intelligence.init();
+        admin.init();
         console.log('[MAIN] Dashboard loaded successfully');
     } catch (error) {
         console.error('[MAIN] Error initializing dashboard:', error);
@@ -1034,9 +1037,12 @@ function bindViewSwitcher() {
     const btnPriority = document.getElementById('view-priority');
     const btnFulfillment = document.getElementById('view-fulfillment');
     const btnIntelligence = document.getElementById('view-intelligence');
+    const btnAdmin = document.getElementById('view-admin');
     const viewPriority = document.getElementById('priority-view');
     const viewFulfillment = document.getElementById('fulfillment-view');
     const viewIntelligence = document.getElementById('intelligence-view');
+    const viewAdmin = document.getElementById('admin-view');
+    const viewNoAccess = document.getElementById('no-access-view');
     const sidebar = document.getElementById('sidebar');
     const homeBrand = document.getElementById('home-brand');
     const closeMobileSidebar = () => {
@@ -1044,18 +1050,38 @@ function bindViewSwitcher() {
         document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', 'false');
     };
 
-    if (!btnPriority || !btnFulfillment || !btnIntelligence) return;
+    if (!btnPriority || !btnFulfillment || !btnIntelligence || !btnAdmin) return;
 
-    const switchToPriority = (pushState = true) => {
-        // Update Buttons
-        btnPriority.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
-        btnFulfillment.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
-        btnIntelligence.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
-
-        // Update Views
-        viewPriority.classList.remove('hidden');
+    const inactiveButtonClass = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
+    const activeButtonClass = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
+    const updateNavigationVisibility = () => {
+        btnPriority.classList.toggle('hidden', !canViewTab('priority'));
+        btnFulfillment.classList.toggle('hidden', !canViewTab('fulfillment'));
+        btnIntelligence.classList.toggle('hidden', !canViewTab('intelligence'));
+        btnAdmin.classList.toggle('hidden', !canManageRoles());
+    };
+    const hideAllViews = () => {
+        viewPriority.classList.add('hidden');
         viewFulfillment.classList.add('hidden');
         viewIntelligence.classList.add('hidden');
+        viewAdmin.classList.add('hidden');
+        viewNoAccess.classList.add('hidden');
+    };
+    const resetButtons = () => {
+        btnPriority.className = inactiveButtonClass;
+        btnFulfillment.className = inactiveButtonClass;
+        btnIntelligence.className = inactiveButtonClass;
+        btnAdmin.className = inactiveButtonClass;
+        updateNavigationVisibility();
+    };
+
+    const switchToPriority = (pushState = true) => {
+        if (!canViewTab('priority')) return false;
+        resetButtons();
+        btnPriority.className = activeButtonClass;
+
+        hideAllViews();
+        viewPriority.classList.remove('hidden');
 
         // Update Navbar Title & Badge
         const navTitle = document.getElementById('nav-dashboard-title');
@@ -1074,18 +1100,16 @@ function bindViewSwitcher() {
         if (pushState) {
             history.pushState({ page: 'priority' }, '', `/priority${currentSearch()}`);
         }
+        return true;
     };
 
     const switchToFulfillment = (pushState = true) => {
-        // Update Buttons
-        btnFulfillment.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
-        btnPriority.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
-        btnIntelligence.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
+        if (!canViewTab('fulfillment')) return false;
+        resetButtons();
+        btnFulfillment.className = activeButtonClass;
 
-        // Update Views
-        viewPriority.classList.add('hidden');
+        hideAllViews();
         viewFulfillment.classList.remove('hidden');
-        viewIntelligence.classList.add('hidden');
 
         // Update Navbar Title & Badge
         const navTitle = document.getElementById('nav-dashboard-title');
@@ -1110,17 +1134,15 @@ function bindViewSwitcher() {
         if (pushState) {
             history.pushState({ page: 'fulfillment' }, '', `/fulfillment${currentSearch()}`);
         }
+        return true;
     };
 
     const switchToIntelligence = (pushState = true) => {
-        // Update Buttons
-        btnIntelligence.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-brand-600 whitespace-nowrap";
-        btnPriority.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
-        btnFulfillment.className = "px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 whitespace-nowrap";
+        if (!canViewTab('intelligence')) return false;
+        resetButtons();
+        btnIntelligence.className = activeButtonClass;
 
-        // Update Views
-        viewPriority.classList.add('hidden');
-        viewFulfillment.classList.add('hidden');
+        hideAllViews();
         viewIntelligence.classList.remove('hidden');
 
         // Update Navbar Title & Badge
@@ -1142,14 +1164,45 @@ function bindViewSwitcher() {
         if (pushState) {
             history.pushState({ page: 'intelligence' }, '', `/intelligence${currentSearch()}`);
         }
+        return true;
+    };
+
+    const switchToAdmin = (pushState = true) => {
+        if (!canManageRoles()) return false;
+        resetButtons();
+        btnAdmin.className = activeButtonClass;
+        hideAllViews();
+        viewAdmin.classList.remove('hidden');
+
+        const navTitle = document.getElementById('nav-dashboard-title');
+        const navBadge = document.getElementById('nav-dashboard-badge');
+        if (navTitle) navTitle.textContent = 'Administration';
+        if (navBadge) {
+            navBadge.textContent = 'Access';
+            navBadge.className = 'hidden sm:inline-block ml-3 text-[10px] font-bold px-2 py-0.5 bg-amber-50 text-amber-700 rounded-lg uppercase tracking-widest border border-amber-100';
+        }
+
+        closeMobileSidebar();
+        sidebar.classList.add('hidden');
+        admin.render('admin-dashboard-container');
+
+        if (pushState) history.pushState({ page: 'admin' }, '', '/admin');
+        return true;
     };
 
     btnPriority.addEventListener('click', () => switchToPriority(true));
     btnFulfillment.addEventListener('click', () => switchToFulfillment(true));
     btnIntelligence.addEventListener('click', () => switchToIntelligence(true));
+    btnAdmin.addEventListener('click', () => switchToAdmin(true));
     homeBrand?.addEventListener('click', () => {
-        switchToPriority(false);
-        history.pushState({ page: 'priority' }, '', `/${currentSearch()}`);
+        const firstAllowedTab = getFirstAllowedTab();
+        const switcher = {
+            priority: switchToPriority,
+            fulfillment: switchToFulfillment,
+            intelligence: switchToIntelligence,
+        }[firstAllowedTab];
+        switcher?.(false);
+        history.pushState({ page: firstAllowedTab }, '', `/${currentSearch()}`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
@@ -1157,9 +1210,11 @@ function bindViewSwitcher() {
 
     const handleRoute = () => {
         const path = window.location.pathname;
+        updateNavigationVisibility();
 
-        if (path.startsWith('/fulfillment')) {
-            switchToFulfillment(false);
+        if (path.startsWith('/admin') && switchToAdmin(false)) {
+            return;
+        } else if (path.startsWith('/fulfillment') && switchToFulfillment(false)) {
             if (path.includes('/location/')) {
                 const parts = path.split('/location/');
                 const locationId = parts[1];
@@ -1167,15 +1222,35 @@ function bindViewSwitcher() {
                     fulfillment.showDrillDown(locationId, false);
                 }
             }
-        } else if (path.startsWith('/intelligence')) {
-            switchToIntelligence(false);
-        } else {
+        } else if (path.startsWith('/intelligence') && switchToIntelligence(false)) {
+            return;
+        } else if ((path === '/' || path.startsWith('/priority')) && canViewTab('priority')) {
             syncStateFromUrl();
             syncSearchInputFromState();
             switchToPriority(false);
             if (path !== '/priority' && path !== '/') {
                 history.replaceState({ page: 'priority' }, '', `/priority${currentSearch()}`);
             }
+        } else {
+            const firstAllowedTab = getFirstAllowedTab();
+            const switcher = {
+                priority: switchToPriority,
+                fulfillment: switchToFulfillment,
+                intelligence: switchToIntelligence,
+            }[firstAllowedTab];
+            if (switcher) {
+                switcher(false);
+            } else {
+                resetButtons();
+                hideAllViews();
+                viewNoAccess.classList.remove('hidden');
+                sidebar.classList.add('hidden');
+                const navTitle = document.getElementById('nav-dashboard-title');
+                const navBadge = document.getElementById('nav-dashboard-badge');
+                if (navTitle) navTitle.textContent = 'No Dashboard Access';
+                navBadge?.classList.add('hidden');
+            }
+            history.replaceState({ page: firstAllowedTab }, '', `/${firstAllowedTab || ''}`);
         }
     };
 
@@ -1184,6 +1259,7 @@ function bindViewSwitcher() {
 
     // Handle Back/Forward buttons
     window.addEventListener('popstate', handleRoute);
+    window.addEventListener('permissionschange', handleRoute);
 }
 
 function bindChartEvents() {
